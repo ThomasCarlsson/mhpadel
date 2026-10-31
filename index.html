@@ -536,7 +536,7 @@ if(typeof module!=='undefined') module.exports={distKm,parseName,classify,classi
  <div id="listView" style="display:contents">
   <header>
     <div>
-      <h1 id="h1">Padel Turneringer</h1>
+      <h1 id="h1">DPF Turneringer</h1>
       <div class="sub" id="sub"></div>
     </div>
     <div class="hbtns"><button class="btn" id="themeBtn" type="button" aria-label="Skift mellem lys og mørk" title="Skift mellem lys og mørk">Mørk</button><button class="btn primary" id="updBtn" type="button" aria-expanded="false" aria-controls="update">Opdater</button></div>
@@ -744,7 +744,7 @@ if(typeof module!=='undefined') module.exports={distKm,parseName,classify,classi
     const now=Date.now();
     $('filters').style.display=state.mode==='tur'?'':'none';
     $('subtabs').style.display=state.mode==='tur'?'':'none';
-    $('h1').textContent=state.mode==='baner'?'Book bane':state.mode==='ll'?'Lunar Liga':'Padel Turneringer';
+    $('h1').textContent=state.mode==='baner'?'Book bane':state.mode==='ll'?'Lunar Liga':'DPF Turneringer';
     const isFin=state.tab==='fin';
     const upcoming=state.events.filter(e=>new Date(e.e).getTime()>=now-3600e3);
     const source=isFin?state.fin.filter(e=>{const t=new Date(e.e).getTime();return t<now&&t>=now-28*864e5}):upcoming;
