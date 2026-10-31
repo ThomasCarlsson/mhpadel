@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#A21CAF">
+<meta name="theme-color" content="#EA580C">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}</style>
 <title>MyPadel</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -12,16 +12,16 @@
 /* Layout: én smal kolonne til mobil. Liste med datoblok og turneringsrække, derfra en detaljeside med faner. Blå bane som accent, tennisbold-gul kun til markering. */
 :root{
   --bg:#F2F5F9; --surface:#FFFFFF; --ink:#0E1D33; --muted:#586A82; --line:#D9E0EA;
-  --court:#A21CAF; --court-ink:#FFFFFF; --ball:#67D9EA; --ball-ink:#04262E; --warn:#8A5200; --grad:linear-gradient(135deg,#C2189F 0%,#7A1AA0 50%,#0B8FB5 100%);
+  --court:#C2410C; --court-ink:#FFFFFF; --ball:#FFC27A; --ball-ink:#3B1A00; --warn:#8A5200; --grad:linear-gradient(135deg,#D9480F 0%,#EA580C 45%,#F59E2B 100%);
   --display:'Barlow Condensed','Arial Narrow',Arial,sans-serif;
   --body:'Barlow',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#130B21; --surface:#1E1333; --ink:#F1E9FA; --muted:#A99BC0; --line:#34244F;
-  --court:#E879F9; --court-ink:#2A0630; --warn:#E3B05C; color-scheme:dark}}
+  --court:#FB923C; --court-ink:#2A1100; --warn:#E3B05C; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#130B21; --surface:#1E1333; --ink:#F1E9FA; --muted:#A99BC0; --line:#34244F;
-  --court:#E879F9; --court-ink:#2A0630; --warn:#E3B05C; color-scheme:dark}
+  --court:#FB923C; --court-ink:#2A1100; --warn:#E3B05C; color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 body{background:var(--bg);color:var(--ink);font:400 16px/1.45 var(--body);
