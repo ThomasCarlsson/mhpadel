@@ -2,7 +2,7 @@ name: Opdater MyPadel
 
 on:
   schedule:
-    - cron: '17 */3 * * *'   # hver 3. time
+    - cron: '7 * * * *'   # hver time. Scriptet vælger selv, hvad der skal opdateres (se scripts/fetch.mjs)
   workflow_dispatch:
   push:
     branches: [main]
