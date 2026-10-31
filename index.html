@@ -597,7 +597,7 @@ if(typeof module!=='undefined') module.exports={distKm,parseName,classify,classi
   <div id="banner"></div>
 
   <div class="tabs" role="tablist" id="subtabs">
-    <button class="tab" role="tab" id="tabAll" aria-selected="true" type="button">DPF turneringer</button>
+    <button class="tab" role="tab" id="tabAll" aria-selected="true" type="button">Kommende</button>
     <button class="tab" role="tab" id="tabFav" aria-selected="false" type="button">Favoritter</button>
     <button class="tab" role="tab" id="tabFin" aria-selected="false" type="button">Afsluttede</button>
   </div>
@@ -794,7 +794,7 @@ if(typeof module!=='undefined') module.exports={distKm,parseName,classify,classi
     if(!matches.length&&!unknown.length){
       out.append(emptyBox(isFin?'Ingen afsluttede turneringer matcher':'Ingen turneringer matcher lige nu','Prøv at bredde afstanden ud eller slå flere niveauer til under Mine filtre.'));
     } else {
-      out.append(el('h2',null,(isFin?'Afsluttede, seneste 4 uger · ':'DPF turneringer · ')+(matches.length+unknown.length)));
+      out.append(el('h2',null,(isFin?'Afsluttede, seneste 4 uger · ':'Kommende · ')+(matches.length+unknown.length)));
       const ul=el('ul','list');
       matches.concat(unknown).sort((a,b)=>isFin?new Date(b.e.s)-new Date(a.e.s):(new Date(a.e.s)-new Date(b.e.s)||(a.dist??1e9)-(b.dist??1e9))).forEach(m=>ul.append(card(m.e,m.cls,m.dist)));
       out.append(ul);
