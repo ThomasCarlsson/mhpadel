@@ -122,7 +122,7 @@ footer{color:var(--muted);font-size:13px}
 /* hovedvalg */
 .mode{position:fixed;z-index:20;left:50%;transform:translateX(-50%);bottom:calc(36px + env(safe-area-inset-bottom,0px));width:min(640px,calc(100% - 32px));display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:color-mix(in srgb,var(--surface) 62%,transparent);-webkit-backdrop-filter:blur(14px) saturate(1.4);backdrop-filter:blur(14px) saturate(1.4);border:1px solid color-mix(in srgb,var(--line) 70%,transparent);border-radius:16px;padding:4px;box-shadow:0 6px 24px rgba(30,10,50,.18)}
 .wrap{padding-bottom:110px}
-.modebtn{border:0;background:none;border-radius:9px;padding:11px 2px;white-space:nowrap;font:700 15px/1 var(--display);letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.modebtn{border:0;background:none;border-radius:9px;padding:11px 4px;white-space:normal;line-height:1.05;font:700 14px/1.05 var(--display);letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
 .modebtn[aria-selected="true"]{background:var(--grad);color:#fff}
 /* lunar liga */
 .stt{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
@@ -543,7 +543,7 @@ if(typeof module!=='undefined') module.exports={distKm,parseName,classify,classi
   </header>
 
   <div class="mode" role="tablist" aria-label="Vælg visning">
-    <button class="modebtn" role="tab" id="modeTur" aria-selected="true" type="button">Turneringer</button>
+    <button class="modebtn" role="tab" id="modeTur" aria-selected="true" type="button">DPF Turneringer</button>
     <button class="modebtn" role="tab" id="modeLL" aria-selected="false" type="button">Lunar Liga</button>
     <button class="modebtn" role="tab" id="modeCrt" aria-selected="false" type="button">Book bane</button>
   </div>
