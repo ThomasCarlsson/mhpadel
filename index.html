@@ -1,0 +1,1611 @@
+<title>MyPadel</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: én smal kolonne til mobil. Liste med datoblok og turneringsrække, derfra en detaljeside med faner. Blå bane som accent, tennisbold-gul kun til markering. */
+:root{
+  --bg:#F2F5F9; --surface:#FFFFFF; --ink:#0E1D33; --muted:#586A82; --line:#D9E0EA;
+  --court:#A21CAF; --court-ink:#FFFFFF; --ball:#67D9EA; --ball-ink:#04262E; --warn:#8A5200; --grad:linear-gradient(135deg,#C2189F 0%,#7A1AA0 50%,#0B8FB5 100%);
+  --display:'Barlow Condensed','Arial Narrow',Arial,sans-serif;
+  --body:'Barlow',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#130B21; --surface:#1E1333; --ink:#F1E9FA; --muted:#A99BC0; --line:#34244F;
+  --court:#E879F9; --court-ink:#2A0630; --warn:#E3B05C; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#130B21; --surface:#1E1333; --ink:#F1E9FA; --muted:#A99BC0; --line:#34244F;
+  --court:#E879F9; --court-ink:#2A0630; --warn:#E3B05C; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.45 var(--body);
+  padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--court);outline-offset:2px}
+.hbtns{display:flex;gap:8px;align-items:center}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+h1{font:700 34px/1 var(--display);letter-spacing:.01em;margin:0;text-transform:uppercase}
+.sub{color:var(--muted);font-size:14px;margin-top:4px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:9px 14px;font-weight:600;font-size:14px}
+.btn.primary{background:var(--grad);border-color:transparent;color:#fff}
+.summary{background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.summary > button{all:unset;box-sizing:border-box;display:flex;width:100%;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px;cursor:pointer}
+.summary > button:focus-visible{outline:3px solid var(--court);outline-offset:-3px;border-radius:12px}
+.eyebrow{font:600 12px/1 var(--body);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.sumtext{font-weight:600;margin-top:4px}
+.chev{font-size:18px;color:var(--muted);transition:transform .15s}
+.summary[data-open="true"] .chev{transform:rotate(180deg)}
+.panel{padding:2px 14px 14px;display:flex;flex-direction:column;gap:14px;border-top:1px solid var(--line)}
+.group{display:flex;flex-direction:column;gap:8px;padding-top:12px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:7px 14px;font-weight:600;font-size:14px;min-height:36px}
+.chip[aria-pressed="true"],.chip[aria-selected="true"]{background:var(--grad);border-color:transparent;color:#fff}
+.switch{display:flex;align-items:center;gap:10px;font-size:14px}
+.switch input{width:20px;height:20px;accent-color:var(--court)}
+.tabs{display:flex;flex-wrap:wrap;column-gap:6px;border-bottom:1px solid var(--line)}
+.tab{background:none;border:0;border-bottom:3px solid transparent;padding:10px 2px;margin-right:12px;font:700 17px/1 var(--display);letter-spacing:.03em;text-transform:uppercase;color:var(--muted)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ball)}
+h2{font:700 20px/1.1 var(--display);letter-spacing:.03em;text-transform:uppercase;margin:6px 0 2px}
+.note{color:var(--muted);font-size:14px;margin:0 0 4px}
+ul.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.card{display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px}
+.date{text-align:center;border-right:1px solid var(--line);padding-right:12px}
+.date .d{font:700 30px/1 var(--display);font-variant-numeric:tabular-nums}
+.date .m{font:600 12px/1.2 var(--body);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:3px}
+.body{min-width:0;display:flex;flex-direction:column;gap:6px}
+.title{font-weight:600;font-size:16px;line-height:1.3;overflow-wrap:anywhere;margin:0}
+.title a{color:var(--ink);text-decoration:none}
+.title a:hover{text-decoration:underline}
+.meta{font-size:14px;color:var(--muted);overflow-wrap:anywhere}
+.tags{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.tag{font:600 12px/1 var(--body);padding:5px 8px;border-radius:6px;background:var(--bg);border:1px solid var(--line);color:var(--muted);font-variant-numeric:tabular-nums}
+.tag.hit{background:var(--ball);border-color:var(--ball);color:var(--ball-ink)}
+.tag.dist{background:none;color:var(--ink)}
+.tag.unk{border-style:dashed}
+.side{display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;gap:8px}
+.star{border:0;background:none;font-size:26px;line-height:1;padding:4px;color:var(--muted)}
+.star[aria-pressed="true"]{color:#C9A400}
+.go{font-weight:600;font-size:14px;color:var(--court);text-decoration:none;white-space:nowrap}
+.go:hover{text-decoration:underline}
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:12px;padding:20px 16px;color:var(--muted)}
+.empty strong{color:var(--ink)}
+.banner{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--ball);border-radius:8px;padding:10px 12px;font-size:14px}
+.update{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.update ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:15px}
+.update p{margin:0;font-size:15px}
+textarea{width:100%;min-height:96px;border:1px solid var(--line);border-radius:8px;background:var(--bg);padding:10px;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+code{font:13px ui-monospace,Menlo,Consolas,monospace;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+.status{font-size:14px}
+.status.err{color:var(--warn)}
+a.ext{color:var(--court);font-weight:600}
+details{font-size:14px;color:var(--muted)}
+details summary{cursor:pointer;padding:4px 0}
+footer{color:var(--muted);font-size:13px}
+/* detaljeside */
+.back{align-self:flex-start;border:0;background:none;color:var(--court);font-weight:600;padding:6px 0;font-size:15px}
+.dhead{display:flex;flex-direction:column;gap:6px}
+.dtitle{font:700 26px/1.1 var(--display);margin:0;overflow-wrap:anywhere;text-transform:none;letter-spacing:0}
+.dl{display:grid;grid-template-columns:minmax(0,120px) minmax(0,1fr);gap:10px 14px;margin:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px}
+.dl dt{color:var(--muted);font-size:14px;font-weight:600}
+.dl dd{margin:0;overflow-wrap:anywhere}
+.cls{list-style:none;margin:0;padding:0;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.cls li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;padding:11px 14px;border-top:1px solid var(--line)}
+.cls li:first-child{border-top:0}
+.cls .n{font-weight:600;overflow-wrap:anywhere}
+.cls .p{font-variant-numeric:tabular-nums;color:var(--muted);font-size:14px}
+.pairs{list-style:none;margin:0;padding:0;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.pair{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px 14px;border-top:1px solid var(--line)}
+.pair:first-child{border-top:0}
+.pair .no{font:700 20px/1 var(--display);color:var(--muted);text-align:center;font-variant-numeric:tabular-nums}
+.pair .nm{display:flex;flex-direction:column;gap:2px;min-width:0}
+.pair .nm span{overflow-wrap:anywhere}
+.pair .rt{font-size:13px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.pair .rt b{display:block;color:var(--ink);font-size:15px}
+.cc{font-size:11px;font-weight:600;letter-spacing:.05em;color:var(--muted);margin-left:6px;text-transform:uppercase}
+.match{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;display:flex;flex-direction:column;gap:8px}
+.mt{font-size:13px;color:var(--muted);display:flex;justify-content:space-between;gap:8px}
+.side2{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.side2 .who{overflow-wrap:anywhere;min-width:0}
+.side2.win .who{font-weight:700}
+.side2.pend .who{color:var(--muted);font-style:italic}
+.score{font-variant-numeric:tabular-nums;font-weight:600}
+.seed{display:inline-block;min-width:20px;text-align:center;margin-right:8px;padding:2px 6px;border-radius:5px;background:var(--ball);color:var(--ball-ink);font:700 12px/1.2 var(--body);font-variant-numeric:tabular-nums}
+/* hovedvalg */
+.mode{position:fixed;z-index:20;left:50%;transform:translateX(-50%);bottom:calc(36px + env(safe-area-inset-bottom,0px));width:min(640px,calc(100% - 32px));display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:color-mix(in srgb,var(--surface) 62%,transparent);-webkit-backdrop-filter:blur(14px) saturate(1.4);backdrop-filter:blur(14px) saturate(1.4);border:1px solid color-mix(in srgb,var(--line) 70%,transparent);border-radius:16px;padding:4px;box-shadow:0 6px 24px rgba(30,10,50,.18)}
+.wrap{padding-bottom:110px}
+.modebtn{border:0;background:none;border-radius:9px;padding:11px 2px;white-space:nowrap;font:700 15px/1 var(--display);letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.modebtn[aria-selected="true"]{background:var(--grad);color:#fff}
+/* lunar liga */
+.stt{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.str{display:grid;grid-template-columns:24px minmax(0,1fr) 28px 62px 36px;gap:6px;align-items:center;padding:9px 12px;border-top:1px solid var(--line);font-variant-numeric:tabular-nums;font-size:14px}
+.str:first-child{border-top:0}
+.str.hd{font:600 11px/1 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+.str .nm{overflow-wrap:anywhere;font-weight:600}
+.str .pt{text-align:right;font-weight:700}
+.str .c{text-align:center;color:var(--muted)}
+.lmatch{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;display:flex;flex-direction:column;gap:6px}
+.lmatch .tm{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.lmatch .tm.win .who{font-weight:700}
+.lmatch .tm .who{overflow-wrap:anywhere;min-width:0}
+.lmatch .tm .sc{font-weight:700;font-variant-numeric:tabular-nums}
+.tmd{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;color:var(--ink);font-size:16px}
+.tmd+.tmd{margin-top:10px}
+.tmd summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;font-weight:600;color:var(--ink)}
+.tmd summary::-webkit-details-marker{display:none}
+.tmd summary .sm{font-size:13px;color:var(--muted);font-weight:400;white-space:nowrap}
+.tmd.me{border-left:4px solid var(--ball)}
+.plr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:baseline;padding:9px 14px;border-top:1px solid var(--line);font-size:15px}
+.plr .pn{overflow-wrap:anywhere}
+.plr a{color:var(--ink);text-decoration:none}
+.plr a:hover{text-decoration:underline}
+.plr .rt{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.lmatch.me{border-left:4px solid var(--ball)}
+.str.me{background:rgba(212,230,74,.25)}
+.lmatch .lm{font-size:13px;color:var(--muted);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+/* baner */
+.cclub{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.cclub+.cclub{margin-top:16px}
+h2+.cclub{margin-top:10px}
+.chead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.chead .cn{font-weight:600;overflow-wrap:anywhere}
+.chead .cm{font-size:13px;color:var(--muted);white-space:nowrap}
+.slot{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 12px;align-items:baseline;padding:9px 14px;border-top:1px solid var(--line)}
+.slot:first-of-type{border-top:0}
+.slot .tm{font:700 20px/1 var(--display);font-variant-numeric:tabular-nums}
+.slot .ds{font-size:14px;color:var(--ink)}
+.slot .pr{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
+.slot .cs{grid-column:2 / 4;font-size:12px;color:var(--muted)}
+.cmore{width:100%;border:0;border-top:1px solid var(--line);background:none;padding:10px;color:var(--court);font-weight:600;font-size:14px}
+.cfilters{display:flex;flex-direction:column;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.cfilters .chips{gap:6px}
+.cfilters .chip{padding:5px 11px;min-height:32px;font-size:13px}
+@media (max-width:420px){.card{grid-template-columns:48px minmax(0,1fr) auto;gap:10px;padding:10px}.date .d{font-size:26px}h1{font-size:30px}.dl{grid-template-columns:minmax(0,96px) minmax(0,1fr)}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<script id="logic">
+/* Ren logik uden DOM, så den kan testes. */
+const LEVELS=[10,25,35,60,100,200,500,1000];
+const CITY_KM={ // ca. kørselsafstand i km fra Københavns centrum
+ 'københavn':4,'frederiksberg':3,'valby':5,'amager':6,'vanløse':6,'brønshøj':6,'husum':7,'østerbro':3,'nørrebro':2,'vesterbro':2,'nordhavn':4,'sydhavn':4,'ørestad':7,'sundby':6,
+ 'kastrup':10,'tårnby':9,'dragør':14,'hvidovre':8,'avedøre':11,'rødovre':8,'herlev':10,'gladsaxe':9,'søborg':8,'bagsværd':11,'gentofte':8,'hellerup':7,'charlottenlund':9,'klampenborg':11,
+ 'lyngby':13,'kongens lyngby':13,'virum':15,'holte':18,'nærum':17,'søllerød':18,'birkerød':22,'allerød':30,'hillerød':35,'farum':20,'værløse':18,'furesø':20,'måløv':15,'ballerup':14,'skovlunde':14,
+ 'brøndby':12,'glostrup':14,'albertslund':16,'vallensbæk':17,'ishøj':18,'hedehusene':22,'taastrup':20,'høje-taastrup':20,'høje taastrup':20,'greve':25,'karlslunde':25,'solrød':28,'jersie':27,
+ 'køge':40,'ølstykke':35,'stenløse':28,'smørum':20,'ledøje':20,'egedal':28,'veksø':30,'frederikssund':40,'jyllinge':38,'skibby':45,'roskilde':32,'gadstrup':38,'viby sjælland':45,'lejre':40,
+ 'hørsholm':25,'rungsted':25,'kokkedal':27,'nivå':30,'fredensborg':38,'humlebæk':33,'espergærde':40,'snekkersten':45,'helsingør':45,'hornbæk':55,'gilleleje':60,'græsted':55,'tisvildeleje':65,'hundested':65,'frederiksværk':50,
+ 'slangerup':38,'hvalsø':45,'holbæk':65,'tølløse':60,'ringsted':62,'haslev':65,'faxe':75,'store heddinge':80,'stevns':80,'sorø':75,'slagelse':85,'korsør':100,'skælskør':105,'kalundborg':105,'høng':80,'næstved':80,'præstø':90,'vordingborg':100,'stege':115,'nykøbing sjælland':85
+};
+function distKm(city,club){
+  const hay=[(city||''),(club||'')].map(s=>s.toLowerCase());
+  for(const h of hay){
+    let best=null;
+    for(const k in CITY_KM){ if(h.includes(k)){ if(best===null||k.length>best.k.length) best={k,v:CITY_KM[k]}; } }
+    if(best) return h===hay[0]&&h.trim()==='københavn'?0:best.v;
+  }
+  return null;
+}
+function genderOf(s){
+  const g=new Set();
+  if(/herre|\bmen\b|mænd|\bmale\b/i.test(s)) g.add('h');
+  if(/dame|kvinde|women|ladies|female/i.test(s)) g.add('d');
+  if(/\bmix/i.test(s)) g.add('m');
+  return g;
+}
+function levelsIn(s){
+  const out=new Set();
+  const re=/DPF\s*\d+(?:\s*[\/\-|,]\s*(?:DPF\s*)?\d+)*/gi; let m;
+  while((m=re.exec(s))){ (m[0].match(/\d+/g)||[]).forEach(n=>{n=+n; if(LEVELS.includes(n)) out.add(n);}); }
+  if(!out.size){
+    const re2=/\b(?:10|25|35|60|100|200)(?:\s*\/\s*(?:10|25|35|60|100|200))+\b/g;
+    while((m=re2.exec(s))) m[0].match(/\d+/g).forEach(n=>out.add(+n));
+  }
+  return out;
+}
+function parseName(name){
+  return name.split(/\s*&\s*|\s+og\s+|\s+\+\s+|\s*\/\/\s*/i)
+    .map(raw=>({g:genderOf(raw),levels:levelsIn(raw)}))
+    .filter(c=>c.levels.size);
+}
+/* sel: {levels:Set<number>, genders:Set<'h'|'d'|'m'>} */
+function classify(name,sel){
+  const cl=parseName(name);
+  if(!cl.length){
+    const g=genderOf(name);
+    if(g.size && ![...g].some(x=>sel.genders.has(x))) return {status:'no'};
+    return {status:'unknown'};
+  }
+  for(const c of cl){
+    const genderOk=c.g.size===0 ? sel.genders.size>0 : [...c.g].some(x=>sel.genders.has(x));
+    if(genderOk && [...c.levels].some(l=>sel.levels.has(l))) return {status:'match',levels:[...c.levels].sort((a,b)=>a-b),open:c.g.size===0};
+  }
+  return {status:'no'};
+}
+function isWaiting(n){return /waiting|venteliste|ventende/i.test(n)}
+/* Når rækkerne er hentet fra Rankedin, bruges de i stedet for turneringens navn. */
+function classifyWithClasses(name,classes,sel){
+  if(classes&&classes.length){
+    let unk=false;const hit=new Set();
+    classes.forEach(c=>{
+      if(isWaiting(c.name)) return;
+      const r=classify(c.name,sel);
+      if(r.status==='match') r.levels.forEach(l=>hit.add(l)); else if(r.status==='unknown') unk=true;
+    });
+    if(hit.size) return {status:'match',levels:[...hit].sort((a,b)=>a-b),open:false,exact:true};
+    return unk?{status:'unknown'}:{status:'no'};
+  }
+  return classify(name,sel);
+}
+function scoreText(s){
+  if(s===null||s===undefined) return '';
+  if(typeof s==='string') return s;
+  if(typeof s==='number') return String(s);
+  if(Array.isArray(s)) return s.map(scoreText).filter(Boolean).join(' ');
+  if(typeof s==='object'){
+    const nums=Object.values(s).filter(v=>typeof v==='number');
+    return nums.join('–');
+  }
+  return '';
+}
+function roundLabel(r,max){
+  const left=max-r;
+  if(left===0) return 'Finale';
+  if(left===1) return 'Semifinaler';
+  if(left===2) return 'Kvartfinaler';
+  return 'Runde '+r;
+}
+
+/* Omsætning fra Rankedins svar til det, appen gemmer. Bruges både i appen og i computer-scriptet. */
+function mapEvent(x){
+  return {id:x.eventId,n:String(x.eventName),c:x.club||'',t:x.city||'',s:x.startDate,e:x.endDate||x.startDate,u:x.eventUrl||x.joinUrl||''};
+}
+function regText(o){
+  const out=[];
+  (function w(v){
+    if(typeof v==='string'){
+      const t=v.replace(/<br\s*\/?>|<\/p>|<\/div>|<\/li>|<\/h[1-6]>/gi,'\n').replace(/<[^>]+>/g,'').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&oslash;/g,'ø').replace(/&aring;/g,'å').replace(/&aelig;/g,'æ').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();
+      if(t) out.push(t);
+    } else if(Array.isArray(v)) v.forEach(w);
+    else if(v&&typeof v==='object') Object.keys(v).forEach(k=>w(v[k]));
+  })(o);
+  return out.join('\n').slice(0,20000);
+}
+function mapInfo(m){
+  const tr=s=>String(s||'').trim();
+  return {
+    name:m.TournamentName,prize:m.Prize||'',closing:m.ClosingDate,start:m.StartDate,end:m.EndDate,
+    address:m.Address||'',club:m.ClubName||m.LocationName||'',count:m.TotalUniquePersonsInTournament,
+    ranking:(m.Rankings&&m.Rankings[0]&&m.Rankings[0].Name)||'',
+    rankIds:(m.Rankings||[]).map(r=>r.Id!=null?r.Id:r.RankingId).filter(x=>x!=null),
+    admins:((m.AdminCarouselVm&&m.AdminCarouselVm.AdminsList)||[]).map(a=>a.Name),
+    classes:(m.Classes||[]).map(c=>({id:c.Id,name:tr(c.Name)})),
+    fees:(m.Fees||[]).map(x=>({name:tr(x.ClassName),price:x.Price,cur:x.CurrencyCode})),
+    fee:m.HasFee?String(m.Fee||''):'',
+    payType:m.PaymentType,payUrl:m.PaymentExternalURL||'',double:!!m.HasDoubleClass,
+    savedAt:new Date().toISOString()
+  };
+}
+function mapPlayers(obj){
+  const pl=p=>p?{name:p.Name||'',cc:p.CountryShort||'',r:p.RatingBegin}:null;
+  const pairs=(Array.isArray(obj.Participants)?obj.Participants:[]).map(x=>{
+    const P=x.Participant||{};
+    return {rank:x.Ranking,seed:P.Seed||'',a:pl(P.FirstPlayer),b:pl(P.SecondPlayer),cancelled:!!P.HasCancelation};
+  });
+  return {pairs,savedAt:new Date().toISOString()};
+}
+function mapResults(j){
+  const pl=(n,b,e)=>n?{name:n,b:b,e:e}:null;
+  const rows=(Array.isArray(j.Data)?j.Data:[]).map(x=>({
+    st:x.Standing,to:x.StandingRangeTo,pts:x.RankingPoint&&x.RankingPoint.Points!=null?x.RankingPoint.Points:null,
+    a:pl(x.Player1Name,x.Player1RatingBegin,x.Player1RatingEnd),b:pl(x.Player2Name,x.Player2RatingBegin,x.Player2RatingEnd)}));
+  return {rows,savedAt:new Date().toISOString()};
+}
+function mapDraws(arr){
+  const part=p0=>{
+    const p=(p0&&p0.Participant)||p0||{};
+    let names=[p.FirstPlayer&&p.FirstPlayer.Name,p.SecondPlayer&&p.SecondPlayer.Name].filter(Boolean);
+    if(!names.length&&p.Name) names=[p.Name];
+    return {n:names,seed:String(p.Seed||(p0&&p0.Seed)||''),pid:p.EventParticipantId||0};
+  };
+  const cell=c=>{const mv=c.MatchViewModel||{};return {
+    id:c.MatchId,r:c.Round,max:c.MaxRound,court:c.CourtName||'',date:c.Date||'',o:c.MatchOrder||0,
+    w:c.WinnerParticipantId||0,fw:mv.IsFirstParticipantWinner,score:scoreText(mv.Score),
+    a:part(c.ChallengerParticipant),b:part(c.ChallengedParticipant)}};
+  const draws=arr.map(x=>{
+    if(x&&x.Elimination){const E=x.Elimination;return {kind:'elim',cons:E.Consolation,ps:E.PlacesStartPos,pe:E.PlacesEndPos,cells:(E.DrawCells||[]).map(cell)}}
+    if(x&&x.RoundRobin) return {kind:'rr'};
+    return {kind:'other'};
+  });
+  return {draws,savedAt:new Date().toISOString()};
+}
+/* Padelmates: klubber inden for 50 km (luftlinje) fra København. Id'erne er klubbernes id hos Padelmates. */
+const CLUBS=[{"id":"20415o8gBZR2QXz4nuwcTz7Ud183","n":"Padel Yard Reffen","t":"Copenhagen","k":"DK","d":3,"cur":"DKK","s":"padelyardreffen"},{"id":"PDXpw2Hh4ZaSI6sTxslHS7tpelV2","n":"Racket Club Kløver","t":"Copenhagen","k":"DK","d":3,"cur":"DKK","s":"racketclubklover","u":"https://racketclub.dk/centre/klover?lang=en#booking"},{"id":"KNoMpFhPeyQWRVHv3yuU3hLe4Fx2","n":"Racket Club RAW","t":"Nordhavn","k":"DK","d":6,"cur":"DKK","s":"racketclubraw","u":"https://racketclub.dk/centre/raw?lang=en#booking"},{"id":"aAdjXXPajhNkhqbWK1EruaJzlNG2","n":"Racket Club Tårnby","t":"Kastrup","k":"DK","d":7,"cur":"DKK","s":"racketclubtarnby","u":"https://racketclub.dk/centre/tarnby?lang=en#booking"},{"id":"c77a720edc504564af33dcea65f08970","n":"Play Padel Dragør","t":"Dragør","k":"DK","d":10,"cur":"DKK","s":"playpadeldragor"},{"id":"640d3850aa8444c58aaff5ca8517f669","n":"ProWorkout Padel","t":"Dragør","k":"DK","d":10,"cur":"DKK","s":"proworkoutpadel"},{"id":"0wyRd9uu9scPBcivW3x0NK7zrjQ2","n":"Racket Club AB","t":"Bagsværd","k":"DK","d":13,"cur":"DKK","s":"racketclubab","u":"https://racketclub.dk/centre/ab?lang=en#booking"},{"id":"54EX259qJIe1WWtlkJ4WEH25aRg1","n":"Racket Club Taastrup - Arla Protein Stadion","t":"Taastrup","k":"DK","d":20,"cur":"DKK","s":"racketclubtaastrup","u":"https://racketclub.dk/centre/taastrup?lang=en#booking"},{"id":"461ibmsKLkZIZw7XlUPhmDSXkaE3","n":"Racket Club Roskilde - Yellowbeard Arena","t":"Roskilde","k":"DK","d":30,"cur":"DKK","s":"racketclubroskilde","u":"https://racketclub.dk/centre/roskilde?lang=en#booking"}];
+const PM='https://fastapi-production-fargate.padelmates.io/player/player_booking/';
+function mapSlots(j){
+  const info={};(j.originalCourts||[]).forEach(c=>{info[c._id]={n:String(c.name||'').trim(),i:!!c.indoor,d:(c.court_dimension_enum==='SINGLE'||c.double===false||/\bsingle\b/i.test(String(c.name||'')))?0:1,p:!c.sport_type||c.sport_type==='PADEL'}});
+  const names=[],idx={},s=[];
+  (j.allSlots||[]).forEach(x=>{
+    if(x.reservedIntersection||[60,90,120].indexOf(x.duration)<0)return;
+    if(info[x.courtId]&&!info[x.courtId].p)return;
+    if(!(x.courtId in idx)){idx[x.courtId]=names.length;const f=info[x.courtId];names.push([(f&&f.n)||String(x.courtName||'').trim(),f?(f.i?1:0):-1,f?f.d:(/\bsingle\b/i.test(String(x.courtName||''))?0:1)])}
+    s.push([idx[x.courtId],Math.round(x.startTimestamp/60000),x.duration,Math.round(x.discountedPrice!=null?x.discountedPrice:x.price)]);
+  });
+  return {c:names,s};
+}
+/* Lunar Ligaen (Rankedin holdliga 956): puljer i Øst, fra 0. Elitedivision til og med Danmarksserien H. */
+const LUNAR_POOLS=[{"id":13614,"g":"0. Elitedivision","l":"Elite"},{"id":13589,"g":"1. Division","l":"A"},{"id":13593,"g":"1. Division","l":"B"},{"id":13597,"g":"2. Division","l":"A"},{"id":13601,"g":"2. Division","l":"B"},{"id":13605,"g":"2. Division","l":"C"},{"id":13609,"g":"2. Division","l":"D"},{"id":13585,"g":"2. Division","l":"E"},{"id":13556,"g":"2. Division","l":"F"},{"id":13560,"g":"2. Division","l":"G"},{"id":13564,"g":"2. Division","l":"H"},{"id":13569,"g":"Danmarksserien","l":"A"},{"id":13572,"g":"Danmarksserien","l":"B"},{"id":13576,"g":"Danmarksserien","l":"C"},{"id":13580,"g":"Danmarksserien","l":"D"},{"id":13674,"g":"Danmarksserien","l":"E"},{"id":13649,"g":"Danmarksserien","l":"F"},{"id":13653,"g":"Danmarksserien","l":"G"},{"id":13657,"g":"Danmarksserien","l":"H"}];
+const LUNAR_ID=956;
+function mapLunar(j){
+  const mm=j.matchesSectionModel||{};
+  const side=t=>t?{n:String(t.name||''),r:(t.result===null||t.result===undefined)?'':String(t.result),w:!!t.isWinner,id:t.id}:{n:'',r:'',w:false};
+  const rounds=(mm.rounds||[]).map(r=>({n:r.roundNumber,d:String(r.roundDate||''),m:(r.matches||[]).map(x=>{
+    const d=x.details||{};
+    return {id:x.matchId,a:side(x.team1),b:side(x.team2),loc:String(d.locationName||x.location||''),city:String(d.city||''),time:String(d.time||''),date:String(d.date||x.date||'')};
+  })}));
+  const st=((j.standings||{}).scoresViewModels||[]).map(s=>({p:s.standing,n:String(s.participantName||''),id:s.participantId,mp:s.matchPoints,pl:s.played,w:s.wins,d:s.draws,l:s.losses,gw:s.gamesWon,gl:s.gamesLost,gd:s.gamesDifference}));
+  return {rounds,st,savedAt:new Date().toISOString()};
+}
+function mapTeams(arr){
+  return (Array.isArray(arr)?arr:[]).map(t=>({id:t.Id,n:String(t.Name||''),club:String(t.HomeClubName||''),pw:t.TeamPower,
+    pl:(t.Players||[]).map(p=>({n:String(p.Name||''),u:String(p.Url||''),cap:!!p.IsCaptain,r:p.Rating}))}));
+}
+/* Kører i en browser-konsol: henter stilling og kampe for alle puljerne og kopierer dem som én pakke. */
+async function lunarMain(pools){
+  const B='https://api.rankedin.com/v1/';
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+  async function get(u){for(let i=0;i<4;i++){try{const r=await fetch(u);if(r.ok)return await r.json()}catch(e){}await sleep(800*(i+1))}return null}
+  async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:n},async()=>{while(i<items.length){const x=items[i++];await fn(x)}}))}
+  console.log('Henter Lunar Ligaen ('+pools.length+' puljer) …');
+  const out={bundle:3,pools:{},at:new Date().toISOString()};
+  const failed=[];let k=0;
+  await pool(pools,4,async p=>{
+    const j=await get(B+'teamleague/GetStandingsSectionAsync?teamleagueId='+LUNAR_ID+'&poolid='+p.id+'&language=en');
+    if(j&&j.matchesSectionModel&&j.standings){
+      out.pools[p.id]=mapLunar(j);
+      const tj=await get(B+'teamleague/GetPoolTeamsAsync?poolid='+p.id+'&language=en');
+      if(Array.isArray(tj)) out.pools[p.id].teams=mapTeams(tj);
+    } else failed.push(p.g+' '+p.l);
+    k++;if(k%5===0)console.log('Puljer '+k+'/'+pools.length);
+  });
+  if(failed.length)console.log('Kunne ikke hente: '+failed.join(', '));
+  const txt=JSON.stringify(out);
+  try{copy(txt);console.log('FÆRDIG. '+Object.keys(out.pools).length+' puljer ('+Math.round(txt.length/1024)+' kB) er kopieret. Gå tilbage til appen og indsæt dem.')}
+  catch(e){window.padelData=txt;console.log('FÆRDIG, men kunne ikke kopiere automatisk. Skriv copy(padelData) og tryk Enter.')}
+}
+function buildLunarScript(){
+  return '(async()=>{\nconst LUNAR_ID='+LUNAR_ID+';\nconst POOLS='+JSON.stringify(LUNAR_POOLS)+';\n'+mapLunar.toString()+'\n'+mapTeams.toString()+'\nawait ('+lunarMain.toString()+')(POOLS);\n})();';
+}
+/* Kører i en browser-konsol: henter ledige baner for alle klubberne og kopierer dem som én pakke. */
+async function courtsMain(clubs){
+  const B2='https://fastapi-production-fargate.padelmates.io/player/player_booking/';
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+  const stats={};
+  async function get(u){
+    let st=0;
+    for(let i=0;i<3;i++){
+      try{const r=await fetch(u);st=r.status;if(r.ok){stats[200]=(stats[200]||0)+1;return await r.json()}if(st>=400&&st<500)break}catch(e){st=0}
+      await sleep(600*(i+1));
+    }
+    stats[st]=(stats[st]||0)+1;return null;
+  }
+  async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:n},async()=>{while(i<items.length){const x=items[i++];await fn(x)}}))}
+  console.log('Henter ledige baner fra Padelmates (script: version 1) …');
+  const now=new Date();const d0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const out={bundle:2,clubs:{},at:new Date().toISOString()};
+  const jobs=[];const noDays=[];
+  await pool(clubs,4,async cl=>{
+    const j=await get(B2+'day_availability?club_id='+cl.id+'&start_datetime='+d0.getTime()+'&end_datetime='+(d0.getTime()+16*864e5)+'&lang=en');
+    if(!j||!Array.isArray(j.days)){noDays.push(cl.n);return}
+    out.clubs[cl.id]={days:{}};
+    j.days.filter(d=>d.available).slice(0,16).forEach(d=>jobs.push({cl,date:d.date}));
+  });
+  console.log(jobs.length+' dage med ledige baner. Henter tider …');
+  let k=0;
+  await pool(jobs,5,async({cl,date})=>{
+    const p=date.split('-').map(Number);
+    const a=new Date(p[0],p[1]-1,p[2]).getTime(),b=new Date(p[0],p[1]-1,p[2]+1).getTime()-1;
+    const j=await get(B2+'all_courts_slot_prices_v3?club_id='+cl.id+'&start_datetime='+a+'&end_datetime='+b+'&lang=en');
+    if(j&&Array.isArray(j.allSlots)) out.clubs[cl.id].days[date]=mapSlots(j);
+    k++;if(k%25===0)console.log('Dage '+k+'/'+jobs.length);
+  });
+  Object.keys(out.clubs).forEach(id=>{
+    let t=JSON.stringify(out.clubs[id].days);
+    if(t.length>230000){
+      const ds=Object.keys(out.clubs[id].days).sort();
+      while(t.length>230000&&ds.length){delete out.clubs[id].days[ds.pop()];t=JSON.stringify(out.clubs[id].days)}
+    }
+  });
+  const n=Object.values(out.clubs).reduce((a,c)=>a+Object.keys(c.days).length,0);
+  console.log('Svar fra Padelmates (statuskode: antal): '+JSON.stringify(stats));
+  if(!n){
+    if(stats[401]||stats[403]) console.log('Padelmates kræver login for at vise ledige tider. Kopier IKKE noget endnu, og skriv til Claude, at du fik 401/403.');
+    else console.log('Jeg fik ingen tider hjem. Skriv til Claude, hvad statuskoderne ovenfor er.');
+    window.padelCourts=JSON.stringify(out);return;
+  }
+  if(noDays.length) console.log('Kunne ikke hente dage for: '+noDays.join(', '));
+  const txt=JSON.stringify(out);
+  try{copy(txt);console.log('FÆRDIG. Baner for '+Object.keys(out.clubs).length+' klubber ('+Math.round(txt.length/1024)+' kB) er kopieret. Gå tilbage til appen og indsæt dem.')}
+  catch(e){window.padelData=txt;console.log('FÆRDIG, men kunne ikke kopiere automatisk. Skriv copy(padelData) og tryk Enter.')}
+}
+function buildCourtsScript(){
+  return '(async()=>{\nconst CLUBS='+JSON.stringify(CLUBS)+';\n'+mapSlots.toString()+'\nawait ('+courtsMain.toString()+')(CLUBS);\n})();';
+}
+/* Kører i en browser-konsol på en computer: henter alt og kopierer det som én pakke. */
+async function bulkMain(selLevels,selGenders,region){
+  const B='https://api.rankedin.com/v1/';
+  const SEL={levels:new Set(selLevels),genders:new Set(selGenders)};
+  const maxKm=region==='dk'?Infinity:region==='sj'?500:+region;
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+  async function get(u){for(let i=0;i<4;i++){try{const r=await fetch(u);if(r.ok)return await r.json()}catch(e){}await sleep(800*(i+1))}return null}
+  async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:n},async()=>{while(i<items.length){const x=items[i++];await fn(x)}}))}
+  console.log('Henter turneringslisten … (script: version 4, med afsluttede)');
+  const events=[];let total=0;const seen=new Set();
+  for(let skip=0;skip<2000;){
+    const j=await get(B+'Organization/GetOrganisationEventsAsync?organisationId=1420&IsFinished=false&Language=en&skip='+skip+'&take=100');
+    if(!j||!Array.isArray(j.payload)||!j.payload.length)break;
+    j.payload.forEach(x=>{if(!seen.has(x.eventId)){seen.add(x.eventId);events.push(mapEvent(x))}});
+    total=j.totalCount||events.length;skip+=j.payload.length;if(skip>=total)break;
+  }
+  if(!events.length){console.log('Kunne ikke hente listen. Tjek din internetforbindelse og prøv igen.');return}
+  console.log(events.length+' turneringer. Henter afsluttede fra de seneste 4 uger …');
+  const cut=Date.now()-28*864e5;
+  const fin=[];const seenF=new Set();
+  try{
+    const U=sk=>B+'Organization/GetOrganisationEventsAsync?organisationId=1420&IsFinished=true&Language=en&skip='+sk+'&take=100';
+    const first=await get(U(0));
+    if(first&&Array.isArray(first.payload)&&first.payload.length){
+      const tot=first.totalCount||first.payload.length;
+      const P=first.payload.map(mapEvent);
+      const asc=new Date(P[0].s)<new Date(P[P.length-1].s);
+      let sk=asc?Math.max(0,tot-100):0;
+      for(let pg=0;pg<25;pg++){
+        let page=first.payload;
+        if(sk!==0){const j=await get(U(sk));page=(j&&j.payload)||[]}
+        if(!page.length)break;
+        const ms=page.map(mapEvent);
+        ms.forEach(e=>{const t=new Date(e.e).getTime();if(!seen.has(e.id)&&!seenF.has(e.id)&&t>=cut&&t<Date.now()){seenF.add(e.id);fin.push(e)}});
+        if(ms.every(e=>new Date(e.e).getTime()<cut))break;
+        if(asc){if(sk===0)break;sk=Math.max(0,sk-100)}else{sk+=page.length;if(sk>=tot)break}
+      }
+    }
+  }catch(err){console.log('Kunne ikke hente afsluttede turneringer: '+err)}
+  console.log(fin.length+' afsluttede turneringer. Henter Info …');
+  const out={bundle:1,events,fin,total,det:{},draws:{},results:{},at:new Date().toISOString()};
+  let n=0;
+  const all=events.concat(fin);
+  await pool(all,6,async e=>{
+    const j=await get(B+'tournament/GetInfoAsync?id='+e.id+'&language=en');
+    if(j&&j.TournamentSidebarModel) out.det[e.id]={info:mapInfo(j.TournamentSidebarModel),players:{}};
+    if(j&&j.TournamentSidebarModel&&!seenF.has(e.id)){const g=await get(B+'tournament/GetRegulationsAsync?id='+e.id+'&language=en');if(g)out.det[e.id].info.reg=regText(g)}
+    n++;if(n%20===0)console.log('Info '+n+'/'+all.length);
+  });
+  const jobs=[];const failed=[];
+  all.forEach(e=>{
+    const d=out.det[e.id];if(!d)return;
+    const isFin=seenF.has(e.id);
+    const km=distKm(e.t,e.c);
+    if(!(region==='dk'||(km!==null&&km<=maxKm)))return;
+    d.info.classes.forEach(c=>{
+      jobs.push({e,c,f:isFin});
+    });
+  });
+  console.log('Henter spillere og kampe for '+jobs.length+' rækker …');
+  let k=0;
+  await pool(jobs,4,async({e,c,f})=>{
+    const p=await get(B+'tournament/GetPlayersForClassAsync?tournamentId='+e.id+'&tournamentClassId='+c.id+'&language=en');
+    if(p&&typeof p==='object'&&!Array.isArray(p)) out.det[e.id].players[c.id]=mapPlayers(p); else failed.push(e.n+' – '+c.name);
+    if(f){
+      const rids=(out.det[e.id].info.rankIds||[]).concat([null]);
+      for(const rid of rids){
+        const r=await get(B+'tournament/GetResultsAsync?tournamentId='+e.id+'&classId='+c.id+(rid!=null?'&rankingId='+rid:'')+'&language=en');
+        if(r&&Array.isArray(r.Data)&&(r.Data.length||rid===null)){out.results[c.id]=Object.assign({tid:e.id},mapResults(r));break}
+      }
+    }
+    if(f||new Date(e.s).getTime()-Date.now()<8*864e5){
+      const d=await get(B+'tournament/GetDrawsForStageAndStrengthAsync?tournamentClassId='+c.id+'&drawStrength=0&drawStage=0&isReadonly=true&language=en');
+      if(Array.isArray(d)&&d.length) out.draws[c.id]=Object.assign({tid:e.id},mapDraws(d));
+    }
+    k++;if(k%10===0)console.log('Rækker '+k+'/'+jobs.length);
+  });
+  out.failed=failed;
+  if(failed.length)console.log('Kunne ikke hente spillere for '+failed.length+' rækker:\n'+failed.join('\n'));
+  const txt=JSON.stringify(out);
+  try{copy(txt);console.log('FÆRDIG. Teksten ('+Math.round(txt.length/1024)+' kB) er kopieret. Gå tilbage til appen og indsæt den.')}
+  catch(e){window.padelData=txt;console.log('FÆRDIG, men kunne ikke kopiere automatisk. Skriv copy(padelData) og tryk Enter.')}
+}
+function buildScript(levels,genders,region){
+  return '(async()=>{\n'
+    +'const LEVELS='+JSON.stringify(LEVELS)+';\n'
+    +'const CITY_KM='+JSON.stringify(CITY_KM)+';\n'
+    +[distKm,genderOf,levelsIn,parseName,classify,isWaiting,scoreText,mapEvent,regText,mapInfo,mapPlayers,mapResults,mapDraws].map(f=>f.toString()).join('\n')+'\n'
+    +'await ('+bulkMain.toString()+')('+JSON.stringify(levels)+','+JSON.stringify(genders)+','+JSON.stringify(region)+');\n'
+    +'})();';
+}
+if(typeof module!=='undefined') module.exports={distKm,parseName,classify,classifyWithClasses,scoreText,roundLabel,mapEvent,mapInfo,mapPlayers,mapResults,mapDraws,buildScript,CLUBS,mapSlots,courtsMain,buildCourtsScript,LUNAR_POOLS,mapLunar,mapTeams,lunarMain,buildLunarScript};
+</script>
+
+<div class="wrap">
+ <div id="listView" style="display:contents">
+  <header>
+    <div>
+      <h1 id="h1">Padel Turneringer</h1>
+      <div class="sub" id="sub"></div>
+    </div>
+    <div class="hbtns"><button class="btn" id="themeBtn" type="button" aria-label="Skift mellem lys og mørk" title="Skift mellem lys og mørk">Mørk</button><button class="btn primary" id="updBtn" type="button" aria-expanded="false" aria-controls="update">Opdater</button></div>
+  </header>
+
+  <div class="mode" role="tablist" aria-label="Vælg visning">
+    <button class="modebtn" role="tab" id="modeTur" aria-selected="true" type="button">Turneringer</button>
+    <button class="modebtn" role="tab" id="modeLL" aria-selected="false" type="button">Lunar Liga</button>
+    <button class="modebtn" role="tab" id="modeCrt" aria-selected="false" type="button">Book bane</button>
+  </div>
+
+  <section class="update" id="update" hidden>
+    <div class="eyebrow">Opdater alt på én gang</div>
+    <p>Kræver en computer. Scriptet henter alle turneringer og deres Info, plus spillere og kampe for alle rækker i turneringer inden for den afstand, du har valgt under Mine filtre. Det henter også de seneste 4 ugers afsluttede turneringer med resultater og DPF-point.</p>
+    <ol>
+      <li><button class="btn" id="copyScript" type="button">Kopiér script</button></li>
+      <li>Åbn <strong>example.com</strong> på computeren (en hvilken som helst side duer) og tryk <strong>F12</strong>. Vælg fanen <strong>Console</strong>, indsæt scriptet og tryk Enter. Spørger Chrome, så skriv <code>allow pasting</code> først.</li>
+      <li>Vent til der står <strong>FÆRDIG</strong>. Teksten er så kopieret. Indsæt den her og tryk Indlæs.</li>
+    </ol>
+    <textarea id="scriptBox" hidden readonly aria-label="Script til konsollen"></textarea>
+    <textarea id="paste" placeholder="Indsæt teksten her" aria-label="Indsæt data fra Rankedin"></textarea>
+    <div class="row"><button class="btn primary" id="loadBtn" type="button">Indlæs</button></div>
+    <div class="status" id="status" role="status"></div>
+    <details>
+      <summary>Hent Lunar Liga (Rankedin)</summary>
+      <p class="note">Henter stilling og kampe for alle puljer i Øst, fra 0. Elitedivision til og med Danmarksserien H. Kør scriptet i konsollen som de andre, og indsæt resultatet i feltet ovenfor.</p>
+      <div class="row"><button class="btn" id="copyLL" type="button">Kopiér Lunar Liga-script</button></div>
+    </details>
+    <details>
+      <summary>Hent ledige baner (Padelmates)</summary>
+      <p class="note">Samme fremgangsmåde: kopiér scriptet, kør det i konsollen på computeren, og indsæt resultatet i feltet ovenfor. Ledige baner skifter hele tiden, så hent dem kort før, du skal bruge dem.</p>
+      <div class="row"><button class="btn" id="copyCourts" type="button">Kopiér baneskript</button></div>
+    </details>
+    <details>
+      <summary>Kun turneringslisten (virker også på mobil)</summary>
+      <ol>
+        <li><a id="apiLink" href="#" target="_blank" rel="noopener">Åbn listen fra Rankedin</a>. Den åbner som ren tekst.</li>
+        <li>Vælg al teksten og kopier den.</li>
+        <li>Indsæt den i feltet ovenfor og tryk Indlæs.</li>
+      </ol>
+      <div id="nextWrap" hidden class="status">Der er flere turneringer. <a id="nextLink" href="#" target="_blank" rel="noopener">Hent næste del</a>, kopier og indsæt igen. De lægges oven i dem, du allerede har.</div>
+    </details>
+  </section>
+
+  <div class="summary" id="filters" data-open="false">
+    <button type="button" id="filtBtn" aria-expanded="false" aria-controls="panel">
+      <span><span class="eyebrow">Mine filtre</span><div class="sumtext" id="sumtext"></div></span>
+      <span class="chev" aria-hidden="true">▾</span>
+    </button>
+    <div class="panel" id="panel" hidden>
+      <div class="group"><div class="eyebrow">Niveau</div><div class="chips" id="chLevel"></div></div>
+      <div class="group" style="padding-top:0"><div class="eyebrow">Række</div><div class="chips" id="chGender"></div></div>
+      <div class="group" style="padding-top:0"><div class="eyebrow">Afstand fra København</div><div class="chips" id="chRegion"></div></div>
+      <label class="switch"><input type="checkbox" id="unkToggle"><span>Vis også turneringer uden niveau i navnet</span></label>
+    </div>
+  </div>
+
+  <div id="banner"></div>
+
+  <div class="tabs" role="tablist" id="subtabs">
+    <button class="tab" role="tab" id="tabAll" aria-selected="true" type="button">DPF turneringer</button>
+    <button class="tab" role="tab" id="tabFav" aria-selected="false" type="button">Favoritter</button>
+    <button class="tab" role="tab" id="tabFin" aria-selected="false" type="button">Afsluttede</button>
+  </div>
+
+  <main id="out"></main>
+  <footer>Data fra Rankedin (Dansk Padel Forbund). Række og niveau aflæses af turneringens navn, indtil du har hentet turneringens rækker. Tjek altid selve turneringen før du tilmelder dig.</footer>
+ </div>
+
+ <div id="detailView" hidden style="display:contents"></div>
+</div>
+
+<script id="ui">
+(function(){
+  const DAYS=['søn','man','tir','ons','tor','fre','lør'];
+  const MON=['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
+  const SEED=[
+   {id:68274,n:"Pakhus 77 Open #11 - Powered by Cejf",c:"Pakhus77",t:"Aarhus",s:"2026-10-30T17:00:00",e:"2026-10-30T23:55:00",u:"/en/tournament/68274/pakhus-77-open-11-powered-by-cejf"},
+   {id:71749,n:"Padel Yard Jernbanebyen, Friday tournament #17 SPEED, 35/25/10 FTM - Powered by Babolat",c:"Padel Yard Jernbanebyen",t:"København",s:"2026-10-30T17:00:00",e:"2026-10-30T23:30:00",u:"/en/tournament/71749/padel-yard-jernbanebyen-friday-tournament-17-speed-35-25-10-ftm-powered-by-babolat"},
+   {id:60803,n:"October Challenge (DPF 200) 🔥 SMASH powered by Flammen 🔥",c:"Complea Arena | SMASH Padelcenter Horsens",t:"Horsens",s:"2026-10-31T08:30:00",e:"2026-10-31T21:30:00",u:"/en/tournament/60803/october-challenge-dpf-200-smash-powered-by-flammen"},
+   {id:60896,n:"Joe & the Juice Tour #30 at Racket Club Slagelse",c:"RACKET CLUB",t:"Slagelse",s:"2026-10-31T09:00:00",e:"2026-10-31T23:30:00",u:"/en/tournament/60896/joe-the-juice-tour-30-at-racket-club-slagelse"},
+   {id:62280,n:"MesterFugen Open x Flow Padel",c:"Flow Padel Galten",t:"Galten",s:"2026-10-31T08:00:00",e:"2026-10-31T23:00:00",u:"/en/tournament/62280/mesterfugen-open-x-flow-padel"},
+   {id:71457,n:"MP Games Kløvermarken #7 - 2026 - Powered by ARLA",c:"Match Padel Kløvermarken",t:"København S",s:"2026-10-31T08:00:00",e:"2026-10-31T20:00:00",u:"/en/tournament/71457/mp-games-klovermarken-7-2026-powered-by-arla"},
+   {id:71562,n:"Odder Padel Center - Semi-Speed turnering - Damer DPF 25/60 og Herrer DPF25/35",c:"Odder Padel Center",t:"Odder",s:"2026-10-31T09:00:00",e:"2026-10-31T23:00:00",u:"/en/tournament/71562/odder-padel-center-semi-speed-turnering-damer-dpf-25-60-og-herrer-dpf25-35"},
+   {id:72355,n:"Sparekassen Danmark Open KVINDER DPF25/DPF35/DPF60/DPF100 & HERRER DPF10/DPF25/DPF35/DPF60",c:"Struer Energi Park",t:"Struer",s:"2026-10-31T09:00:00",e:"2026-11-01T22:00:00",u:"/en/tournament/72355/sparekassen-danmark-open-kvinder-dpf25-dpf35-dpf60-dpf100-herrer-dpf10-dpf25-dpf35-dpf60"},
+   {id:60830,n:"De 5 Gaarde Open, Skjern",c:"Danske Padelturneringer",t:"Skjern",s:"2026-11-01T09:00:00",e:"2026-11-01T23:00:00",u:"/en/tournament/60830/de-5-gaarde-open-skjern"},
+   {id:63156,n:"SUPERBRUGSEN OPEN",c:"PadelHouse",t:"Kerteminde",s:"2026-11-01T09:00:00",e:"2026-11-01T19:00:00",u:"/en/tournament/63156/superbrugsen-open"}
+  ];
+  const API_BASE='https://api.rankedin.com/v1/';
+  const API=API_BASE+'Organization/GetOrganisationEventsAsync?organisationId=1420&IsFinished=false&Language=en';
+  const apiUrl=skip=>API+'&skip='+skip+'&take=200';
+  const URL_REG=id=>API_BASE+'tournament/GetRegulationsAsync?id='+id+'&language=en';
+  const URL_INFO=id=>API_BASE+'tournament/GetInfoAsync?id='+id+'&language=en';
+  const URL_PLAYERS=(id,cid)=>API_BASE+'tournament/GetPlayersForClassAsync?tournamentId='+id+'&tournamentClassId='+cid+'&language=en';
+  const URL_RESULTS=(id,cid,rid)=>API_BASE+'tournament/GetResultsAsync?tournamentId='+id+'&classId='+cid+(rid!=null?'&rankingId='+rid:'')+'&language=en';
+  const URL_DRAWS=cid=>API_BASE+'tournament/GetDrawsForStageAndStrengthAsync?tournamentClassId='+cid+'&drawStrength=0&drawStage=0&isReadonly=true&language=en';
+
+  const $=id=>document.getElementById(id);
+  const STATIC=!window.claude; /* uden for Claude hentes data automatisk fra data/*.json */
+  const MEM=new Set(['pt.det','pt.data','pt.fin','pt.baner','pt.ll']);
+  const store={
+    get(k,d){if(STATIC&&MEM.has(k))return d;try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
+    set(k,v){if(STATIC&&MEM.has(k))return;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+  };
+  const saved=store.get('pt.data',null);
+  const f=store.get('pt.filters',{});
+  const det=window.claude?{}:store.get('pt.det',{});
+  const savedFin=store.get('pt.fin',null);
+  let db=null;
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+  async function dbSet(path,data){
+    for(let i=0;i<4;i++){
+      try{await db.doc(path).set(data);return}
+      catch(e){if(e&&(e.code==='resource_exhausted'||e.code==='unavailable')&&i<3){await sleep(500*(i+1));continue}throw e}
+    }
+  }
+  async function persistList(){const v={events:state.events,total:state.total,savedAt:state.savedAt};store.set('pt.data',v);if(db)await dbSet('app/list',v)}
+  async function persistTournament(id){const d=det[id];if(db){await dbSet('tournaments/'+id,{info:d.info||null,players:d.players||{}})}else store.set('pt.det',det)}
+  async function persistResult(id,cid){const x=det[id].results[cid];if(db){await dbSet('results/'+cid,{tid:+id,rows:x.rows,savedAt:x.savedAt})}else store.set('pt.det',det)}
+  async function persistDraw(id,cid){const x=det[id].draws[cid];if(db){await dbSet('draws/'+cid,{tid:+id,draws:x.draws,savedAt:x.savedAt})}else store.set('pt.det',det)}
+  async function persistFin(){const v={events:state.fin,savedAt:state.finAt};store.set('pt.fin',v);if(db)await dbSet('app/finished',v)}
+  async function persistFav(){store.set('pt.fav',[...state.fav]);if(db)await dbSet('app/prefs',{fav:[...state.fav]})}
+  const dbErr=e=>{state.warn='Kunne ikke gemme i databasen ('+((e&&e.code)||'fejl')+'). Prøv igen.';render()};
+  const state={
+    events:saved&&saved.events&&saved.events.length?saved.events:SEED,
+    fin:savedFin&&savedFin.events?savedFin.events:[],finAt:savedFin?savedFin.savedAt:null,
+    total:saved?saved.total:null,
+    savedAt:saved?saved.savedAt:null,
+    isSeed:!(saved&&saved.events&&saved.events.length),
+    levels:new Set(f.levels||[60,100,200]),
+    genders:new Set(f.genders||['h']),
+    region:f.region||'sj',
+    unk:f.unk!==undefined?f.unk:true,openOnly:!!f.openOnly,
+    tab:'alle',mode:(['baner','ll'].includes(store.get('pt.mode','tur')))?store.get('pt.mode','tur'):'tur',
+    fav:new Set(store.get('pt.fav',[])),
+    crt:window.claude?{}:store.get('pt.baner',{}),cf:Object.assign({date:'',slot:'alle',dur:90,inout:'alle',size:'alle',off:[],km:50,dk:true,se:true},store.get('pt.cf',{})),cmore:{},cOpen:false,ll:window.claude?{}:store.get('pt.ll',{}),llf:Object.assign({pool:13674,show:'mine',view:'tabel',open:false},store.get('pt.llf',{})),
+    dtab:'info',dcls:null,lastScroll:0,dbReady:false,warn:'',importing:false
+  };
+  const saveFilters=()=>store.set('pt.filters',{levels:[...state.levels],genders:[...state.genders],region:state.region,unk:state.unk,openOnly:state.openOnly});
+
+  const LEVEL_CHIPS=[10,25,35,60,100,200,500];
+  const GENDER_CHIPS=[['h','Herrer'],['d','Damer'],['m','Mix']];
+  const REGION_CHIPS=[['30','Inden for 30 km'],['60','Inden for 60 km'],['sj','Hele Sjælland'],['dk','Hele landet']];
+  const selNow=()=>({levels:state.levels,genders:state.genders});
+  const findEvent=id=>state.events.find(x=>x.id===id)||state.fin.find(x=>x.id===id);
+  const classifyEvent=e=>classifyWithClasses(e.n,det[e.id]&&det[e.id].info&&det[e.id].info.classes,selNow());
+
+  function chipRow(el,items,isOn,onTap){
+    el.textContent='';
+    items.forEach(([val,label])=>{
+      const b=document.createElement('button');
+      b.type='button';b.className='chip';b.textContent=label;
+      b.setAttribute('aria-pressed',isOn(val)?'true':'false');
+      b.addEventListener('click',()=>onTap(val));
+      el.appendChild(b);
+    });
+  }
+  function toggle(set,v){set.has(v)?set.delete(v):set.add(v)}
+  const hm=d=>String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+  function fmtDate(e){
+    const a=new Date(e.s),b=new Date(e.e);
+    const same=a.toDateString()===b.toDateString();
+    const when=same?DAYS[a.getDay()]+' '+hm(a)+'–'+hm(b)
+      :DAYS[a.getDay()]+' '+a.getDate()+'. '+MON[a.getMonth()]+' – '+DAYS[b.getDay()]+' '+b.getDate()+'. '+MON[b.getMonth()];
+    return {d:a.getDate(),m:MON[a.getMonth()],when};
+  }
+  const fmtDT=iso=>{if(!iso)return '';const d=new Date(iso);return DAYS[d.getDay()]+' '+d.getDate()+'. '+MON[d.getMonth()]+' kl. '+hm(d)};
+  function link(e){const u=e.u||('/en/tournament/'+e.id);return u.startsWith('http')?u:'https://www.rankedin.com'+u}
+  function el(tag,cls,text){const x=document.createElement(tag);if(cls)x.className=cls;if(text!==undefined)x.textContent=text;return x}
+
+  function card(e,cls,dist){
+    const li=el('li','card');
+    const dt=fmtDate(e);
+    const date=el('div','date');date.append(el('div','d',String(dt.d)),el('div','m',dt.m));
+    const body=el('div','body');
+    const h=el('h3','title');const ta=el('a',null,e.n);ta.href='#t-'+e.id;
+    ta.addEventListener('click',()=>{state.lastScroll=window.scrollY});
+    h.append(ta);body.append(h);
+    body.append(el('div','meta',dt.when+' · '+(e.c||'')+(e.t?', '+e.t:'')));
+    const tags=el('div','tags');
+    if(dist!==null&&dist!==undefined) tags.append(el('span','tag dist',(dist===0?'København':'ca. '+dist+' km')));
+    const rs0=regStatus(e);
+    if(rs0&&rs0.closed) tags.append(el('span','tag unk','Tilmelding lukket'));
+    else if(rs0) tags.append(el('span','tag hit','Tilmelding åben'));
+    if(cls&&cls.status==='match'){
+      cls.levels.forEach(l=>tags.append(el('span','tag'+(state.levels.has(l)?' hit':''),'DPF '+l)));
+      if(cls.open) tags.append(el('span','tag unk','Række ikke angivet'));
+      if(cls.exact) tags.append(el('span','tag','Rækker hentet'));
+    } else if(cls&&cls.status==='unknown'){
+      tags.append(el('span','tag unk','Niveau ikke angivet'));
+    }
+    body.append(tags);
+    const side=el('div','side');
+    const star=el('button','star',state.fav.has(e.id)?'★':'☆');
+    star.type='button';star.setAttribute('aria-pressed',state.fav.has(e.id)?'true':'false');
+    star.setAttribute('aria-label',state.fav.has(e.id)?'Fjern fra favoritter':'Gem som favorit');
+    star.addEventListener('click',()=>{toggle(state.fav,e.id);persistFav().catch(dbErr);render()});
+    const a=el('a','go','Rankedin ↗');a.href=link(e);a.target='_blank';a.rel='noopener';
+    side.append(star,a);
+    li.append(date,body,side);
+    return li;
+  }
+
+  function render(){
+    const now=Date.now();
+    $('filters').style.display=state.mode==='tur'?'':'none';
+    $('subtabs').style.display=state.mode==='tur'?'':'none';
+    $('h1').textContent=state.mode==='baner'?'Book bane':state.mode==='ll'?'Lunar Liga':'Padel Turneringer';
+    const isFin=state.tab==='fin';
+    const upcoming=state.events.filter(e=>new Date(e.e).getTime()>=now-3600e3);
+    const source=isFin?state.fin.filter(e=>{const t=new Date(e.e).getTime();return t<now&&t>=now-28*864e5}):upcoming;
+    const maxKm=state.region==='dk'?Infinity:state.region==='sj'?500:+state.region;
+    const matches=[],unknown=[];let hiddenLevel=0,hiddenRegion=0,hiddenReg=0;const missed=new Set();
+    source.forEach(e=>{
+      const cls=classifyEvent(e);
+      const dist=distKm(e.t,e.c);
+      const regionOk=state.region==='dk'||(dist!==null&&dist<=maxKm);
+      if(cls.status==='no'){hiddenLevel++;return}
+      if(cls.status==='unknown'&&!state.unk){hiddenLevel++;return}
+      if(!regionOk){hiddenRegion++;if(dist===null&&e.t)missed.add(e.t);return}
+      if(!isFin&&state.openOnly){const rs=regStatus(e);if(!rs||rs.closed){hiddenReg++;return}}
+      (cls.status==='match'?matches:unknown).push({e,cls,dist});
+    });
+    const lv=[...state.levels].sort((a,b)=>a-b).join('/');
+    const gn=GENDER_CHIPS.filter(([k])=>state.genders.has(k)).map(([,l])=>l).join(' + ')||'Ingen række';
+    const rg=REGION_CHIPS.find(([k])=>k===state.region)[1].replace('Inden for ','inden for ');
+    $('sumtext').textContent=gn+' · DPF '+(lv||'–')+' · '+rg;
+    $('sub').textContent=upcoming.length+' kommende i listen'+(state.savedAt?' · opdateret '+new Date(state.savedAt).getDate()+'. '+MON[new Date(state.savedAt).getMonth()]:'');
+    $('banner').textContent='';
+    if(state.mode==='baner'){renderCourts();return}
+    if(state.mode==='ll'){renderLunar();return}
+    if(state.isSeed){
+      const b=el('div','banner');
+      b.append(el('strong',null,'Kun et lille eksempel. '),document.createTextNode('Der er 10 turneringer i listen lige nu. Tryk Opdater for at hente alle kommende turneringer.'));
+      $('banner').append(b);
+    } else if(state.total&&state.total>state.events.length){
+      const b=el('div','banner');
+      b.textContent='Du har '+state.events.length+' af '+state.total+' turneringer. Tryk Opdater for at hente resten.';
+      $('banner').append(b);
+    }
+    if(state.dbReady&&!db&&window.claude){const b=el('div','banner');b.textContent='Data gemmes kun i denne browser, fordi databasen ikke er tilgængelig.';$('banner').append(b)}
+    if(state.warn){const b=el('div','banner');b.textContent=state.warn;$('banner').append(b)}
+    const out=$('out');out.textContent='';
+    if(state.tab==='fav'){
+      const favs=state.events.filter(e=>state.fav.has(e.id)).sort((a,b)=>new Date(a.s)-new Date(b.s));
+      if(!favs.length){out.append(emptyBox('Ingen favoritter endnu','Tryk på stjernen ved en turnering for at gemme den her.'));return}
+      const ul=el('ul','list');
+      favs.forEach(e=>ul.append(card(e,classifyEvent(e),distKm(e.t,e.c))));
+      out.append(ul);return;
+    }
+    if(isFin&&!state.fin.length){
+      out.append(emptyBox('Ingen afsluttede turneringer hentet endnu','Tryk Opdater og kør scriptet. Det henter de seneste 4 ugers turneringer med resultater.'));return;
+    }
+    if(!isFin){const ob=el('button','chip','Kun åben tilmelding');ob.type='button';ob.id='openOnlyChip';ob.setAttribute('aria-pressed',String(state.openOnly));ob.style.alignSelf='flex-start';ob.style.marginBottom='8px';ob.addEventListener('click',()=>{state.openOnly=!state.openOnly;saveFilters();render()});out.append(ob)}
+    if(!matches.length&&!unknown.length){
+      out.append(emptyBox(isFin?'Ingen afsluttede turneringer matcher':'Ingen turneringer matcher lige nu','Prøv at bredde afstanden ud eller slå flere niveauer til under Mine filtre.'));
+    } else {
+      out.append(el('h2',null,(isFin?'Afsluttede, seneste 4 uger · ':'DPF turneringer · ')+(matches.length+unknown.length)));
+      const ul=el('ul','list');
+      matches.concat(unknown).sort((a,b)=>isFin?new Date(b.e.s)-new Date(a.e.s):(new Date(a.e.s)-new Date(b.e.s)||(a.dist??1e9)-(b.dist??1e9))).forEach(m=>ul.append(card(m.e,m.cls,m.dist)));
+      out.append(ul);
+    }
+    const info=el('details');
+    info.append(el('summary',null,'Skjult af filtrene: '+(hiddenLevel+hiddenRegion+hiddenReg)));
+    info.append(el('div',null,hiddenLevel+' har et andet niveau eller en anden række. '+hiddenRegion+' ligger uden for den valgte afstand.'+(hiddenReg?' '+hiddenReg+' har ikke åben tilmelding, eller tilmeldingen er ikke hentet.':'')));
+    if(missed.size&&state.region!=='dk') info.append(el('div',null,'Byer jeg ikke kender afstanden til, så de blev skjult: '+[...missed].sort().join(', ')+'. Ligger en af dem på Sjælland, så sig til.'));
+    out.append(info);
+  }
+  /* ---------- ledige baner ---------- */
+  const CPH=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Copenhagen',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
+  function cph(ts){const o={};CPH.formatToParts(new Date(ts)).forEach(p=>{o[p.type]=p.value});return {date:o.year+'-'+o.month+'-'+o.day,h:+o.hour,m:+o.minute}}
+  const hhmm=c=>String(c.h).padStart(2,'0')+':'+String(c.m).padStart(2,'0');
+  const SLOTS=[['alle','Alle tider',0,24],['f12','Før 12',0,12],['m17','12–17',12,17],['a21','17–21',17,21],['e21','Efter 21',21,24]];
+  const saveCf=()=>store.set('pt.cf',state.cf);
+  function dayLabel(key){
+    const today=cph(Date.now()).date;
+    const tom=cph(Date.now()+864e5).date;
+    const p=key.split('-').map(Number);const d=new Date(Date.UTC(p[0],p[1]-1,p[2],12));
+    const base=DAYS[d.getUTCDay()]+' '+p[2]+'/'+p[1];
+    return key===today?'I dag':key===tom?'I morgen':base;
+  }
+  function renderCourts(){
+    const out=$('out');out.textContent='';
+    const cf=state.cf;
+    const have=Object.keys(state.crt).filter(id=>Object.keys(state.crt[id].days||{}).length);
+    $('sub').textContent=have.length?have.length+' klubber med ledige baner':'Ingen baner hentet endnu';
+    if(!have.length){
+      out.append(emptyBox('Ingen ledige baner hentet endnu','Tryk Opdater, åbn "Hent ledige baner (Padelmates)" og følg trinnene på computeren.'));
+      return;
+    }
+    const today=cph(Date.now()).date;
+    const dates=[...new Set(have.flatMap(id=>Object.keys(state.crt[id].days)))].filter(d=>d>=today).sort();
+    if(!dates.includes(cf.date)) cf.date=dates[0]||'';
+    const age=have.reduce((m,id)=>Math.min(m,new Date(state.crt[id].savedAt||0).getTime()),Infinity);
+    const hrs=(Date.now()-age)/36e5;
+    const nb=el('div','banner');
+    nb.textContent='Hentet '+fmtDT(new Date(age).toISOString())+(hrs>3?'. Ledige baner skifter hele tiden, så tiderne kan være taget. Hent igen under Opdater.':'.');
+    $('banner').append(nb);
+    const box=el('div','panel');box.hidden=!state.cOpen;
+    const row=(label,items,isOn,onTap)=>{
+      const g=el('div');g.append(el('div','eyebrow',label));
+      const ch=el('div','chips');ch.style.marginTop='6px';
+      items.forEach(([v,l])=>{const b=el('button','chip',l);b.type='button';b.setAttribute('aria-pressed',String(isOn(v)));b.addEventListener('click',()=>{onTap(v);saveCf();render()});ch.append(b)});
+      g.append(ch);box.append(g);
+    };
+    row('Dag',dates.map(d=>[d,dayLabel(d)]),v=>cf.date===v,v=>{cf.date=v});
+    row('Tidspunkt',SLOTS.map(x=>[x[0],x[1]]),v=>cf.slot===v,v=>{cf.slot=v});
+    row('Varighed',[[0,'Alle'],[60,'60 min'],[90,'90 min'],[120,'120 min']],v=>cf.dur===v,v=>{cf.dur=v});
+    row('Bane',[['alle','Alle'],['inde','Indendørs'],['ude','Udendørs']],v=>cf.inout===v,v=>{cf.inout=v});
+    row('Banetype',[['alle','Alle'],['double','Double'],['single','Single']],v=>cf.size===v,v=>{cf.size=v});
+    row('Afstand fra København',[[15,'15 km'],[30,'30 km'],[50,'50 km']],v=>cf.km===v,v=>{cf.km=v});
+
+    const off=new Set(cf.off||[]);
+    const pick=CLUBS.filter(c=>c.d<=cf.km&&true);
+    const cg=el('div');cg.append(el('div','eyebrow','Klubber'));
+    const cch=el('div','chips');cch.style.marginTop='6px';
+    const all=el('button','chip','Alle');all.type='button';all.setAttribute('aria-pressed',String(!pick.some(c=>off.has(c.id))));
+    all.addEventListener('click',()=>{cf.off=(cf.off||[]).filter(id=>!pick.some(c=>c.id===id));saveCf();render()});
+    cch.append(all);
+    pick.forEach(c=>{
+      const b=el('button','chip',c.n.split(' - ')[0]);b.type='button';b.setAttribute('aria-pressed',String(!off.has(c.id)));
+      b.addEventListener('click',()=>{
+        const o=new Set(cf.off||[]);
+        // første tryk, når alle er valgt, vælger kun den klub; derefter slår man klubber til og fra
+        if(!pick.some(x=>o.has(x.id))){pick.forEach(x=>{if(x.id!==c.id)o.add(x.id)})}
+        else if(o.has(c.id)) o.delete(c.id); else o.add(c.id);
+        if(pick.every(x=>o.has(x.id))) o.delete(c.id);
+        cf.off=[...o];saveCf();render();
+      });
+      cch.append(b);
+    });
+    cg.append(cch);box.append(cg);
+    const sl=SLOTS.find(x=>x[0]===cf.slot)||SLOTS[0];
+    const sum=el('div','summary');sum.dataset.open=String(!!state.cOpen);
+    const sbtn=el('button');sbtn.type='button';sbtn.setAttribute('aria-expanded',String(!!state.cOpen));
+    const sl2=el('span');
+    const parts=[dayLabel(cf.date),sl[1],cf.dur?cf.dur+' min':'Alle varigheder',cf.inout==='inde'?'Indendørs':cf.inout==='ude'?'Udendørs':'Inde og ude',cf.size==='double'?'Double':cf.size==='single'?'Single':'Alle baner',cf.km+' km'];
+    const nOff=pick.filter(c=>off.has(c.id)).length;
+    if(nOff) parts.push((pick.length-nOff)+' af '+pick.length+' klubber');
+    sl2.append(el('span','eyebrow','Mine filtre'),el('div','sumtext',parts.join(' · ')));
+    sbtn.append(sl2,el('span','chev','▾'));
+    sbtn.addEventListener('click',()=>{state.cOpen=!state.cOpen;box.hidden=!state.cOpen;sum.dataset.open=String(state.cOpen);sbtn.setAttribute('aria-expanded',String(state.cOpen))});
+    sum.append(sbtn,box);
+    out.append(sum);
+    const nowMin=Date.now()/60000;
+    const clubs=CLUBS.filter(c=>c.d<=cf.km&&state.crt[c.id]&&!off.has(c.id)&&true);
+    const groups=[];let totalSlots=0;
+    clubs.forEach(c=>{
+      const day=(state.crt[c.id].days||{})[cf.date];if(!day)return;
+      const by=new Map();
+      day.s.forEach(([ci,st,du,pr])=>{
+        if(st<=nowMin)return;
+        if(cf.dur&&du!==cf.dur)return;
+        const ct=day.c[ci]||['?',-1];
+        if(cf.inout==='inde'&&ct[1]!==1)return;
+        if(cf.inout==='ude'&&ct[1]!==0)return;
+        const dm=ct[2]===undefined?1:ct[2];
+        if(cf.size==='double'&&dm===0)return;
+        if(cf.size==='single'&&dm!==0)return;
+        const t=cph(st*60000);
+        if(t.h<sl[2]||t.h>=sl[3])return;
+        const key=st+'|'+du;
+        if(!by.has(key))by.set(key,{st,du,t,pr:pr,courts:[]});
+        const g=by.get(key);g.pr=Math.min(g.pr,pr);g.courts.push(ct);
+      });
+      const rows=[...by.values()].sort((a,b)=>a.st-b.st||a.du-b.du);
+      if(rows.length){groups.push({c,rows});totalSlots+=rows.length}
+    });
+    out.append(el('h2',null,dayLabel(cf.date)+' · '+totalSlots+' ledige tider i '+groups.length+' klubber'));
+    if(!groups.length){out.append(emptyBox('Ingen ledige baner med de valgte filtre','Prøv en anden dag, flere tidspunkter eller en anden varighed.'));return}
+    groups.forEach(({c,rows})=>{
+      const card=el('div','cclub');
+      const head=el('div','chead');
+      const left=el('div');left.append(el('div','cn',c.n),el('div','cm',c.t+' · ca. '+c.d+' km'));
+      const a=el('a','go','Book i Padelmates ↗');a.href='https://padelmates.se/club/'+c.s;a.target='_blank';a.rel='noopener';
+      head.append(left,a);card.append(head);
+      const list=el('div');
+      const LIM=8;const open=state.cmore[c.id];
+      rows.forEach((r,i)=>{
+        if(!open&&i>=LIM)return;
+        const end=cph((r.st+r.du)*60000);
+        const x=el('div','slot');
+        x.append(el('div','tm',hhmm(r.t)),el('div','ds',hhmm(r.t)+'–'+hhmm(end)+' · '+r.du+' min · '+r.courts.length+(r.courts.length===1?' bane':' baner')),el('div','pr',(rows.length&&r.courts.length>1?'fra ':'')+r.pr+(c.cur==='DKK'?' kr':' '+c.cur)));
+        x.append(el('div','cs',r.courts.map(ct=>ct[0].replace(/^\s*[\w]+\s*[│|]\s*/,'')+(ct[2]===0?' (single)':'')+(ct[1]===1?' (inde)':ct[1]===0?' (ude)':'')).join(', ')));
+        list.append(x);
+      });
+      card.append(list);
+      if(rows.length>LIM&&!open){const m=el('button','cmore','Vis alle '+rows.length+' tider');m.type='button';m.addEventListener('click',()=>{state.cmore[c.id]=true;render()});card.append(m)}
+      out.append(card);
+    });
+    out.append(el('div','note','Tider og priser er fra Padelmates. Åbn Padelmates for at booke.'));
+  }
+  /* ---------- lunar liga ---------- */
+  const MY={pool:13674,id:3281136,n:'Los Ocho x Bareen'}; // mit hold: Øst, Danmarksserien E
+  const isMy=t=>t&&(t.id===MY.id||t.n===MY.n);
+  const saveLl=()=>store.set('pt.llf',state.llf);
+  function dmy(s){
+    s=String(s||'');
+    let m=/^(\d{1,2})\/(\d{1,2})\/(\d{4})/.exec(s);if(m)return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
+    m=/^(\d{4})-(\d{2})-(\d{2})/.exec(s);if(m)return m[0];
+    return '';
+  }
+  function dayText(key){
+    if(!key)return '';
+    const p=key.split('-').map(Number);const d=new Date(Date.UTC(p[0],p[1]-1,p[2],12));
+    return DAYS[d.getUTCDay()]+' '+p[2]+'. '+MON[p[1]-1];
+  }
+  const poolName=p=>p.g==='0. Elitedivision'?'0. Elitedivision':p.g+' '+p.l;
+  function renderLunar(){
+    const out=$('out');out.textContent='';
+    const have=LUNAR_POOLS.filter(p=>state.ll[p.id]&&state.ll[p.id].st);
+    $('sub').textContent=have.length?'Lunar Ligaen · '+have.length+' puljer hentet':'Lunar Ligaen · Øst';
+    if(!have.length){
+      out.append(emptyBox('Ingen Lunar Liga-data hentet endnu','Tryk Opdater, åbn "Hent Lunar Liga (Rankedin)" og følg trinnene på computeren.'));
+      return;
+    }
+    const f=state.llf;
+    if(!LUNAR_POOLS.some(p=>p.id===f.pool)) f.pool=LUNAR_POOLS[0].id;
+    const cur=LUNAR_POOLS.find(p=>p.id===f.pool);
+    const rec=state.ll[cur.id];
+    const age=have.reduce((m,p)=>Math.min(m,new Date(state.ll[p.id].savedAt||0).getTime()),Infinity);
+    const nb=el('div','banner');nb.textContent='Hentet '+fmtDT(new Date(age).toISOString())+'.';$('banner').append(nb);
+    const sum=el('div','summary');sum.dataset.open=String(!!f.open);
+    const sbtn=el('button');sbtn.type='button';sbtn.setAttribute('aria-expanded',String(!!f.open));
+    const sl=el('span');sl.append(el('span','eyebrow','Pulje'),el('div','sumtext','Øst · '+poolName(cur)));
+    sbtn.append(sl,el('span','chev','▾'));
+    const panel=el('div','panel');panel.hidden=!f.open;
+    sbtn.addEventListener('click',()=>{f.open=!f.open;panel.hidden=!f.open;sum.dataset.open=String(f.open);sbtn.setAttribute('aria-expanded',String(f.open));saveLl()});
+    const groups=[...new Set(LUNAR_POOLS.map(p=>p.g))];
+    groups.forEach(g=>{
+      const gd=el('div');gd.append(el('div','eyebrow',g));
+      const ch=el('div','chips');ch.style.marginTop='6px';
+      LUNAR_POOLS.filter(p=>p.g===g).forEach(p=>{
+        const b=el('button','chip',p.l+(p.id===MY.pool?' ★':''));b.type='button';b.setAttribute('aria-pressed',String(p.id===f.pool));
+        if(!state.ll[p.id]) b.style.opacity='.5';
+        b.addEventListener('click',()=>{f.pool=p.id;f.open=false;saveLl();render()});
+        ch.append(b);
+      });
+      gd.append(ch);panel.append(gd);
+    });
+    sum.append(sbtn,panel);out.append(sum);
+    if(!rec||!rec.st){out.append(emptyBox('Puljen er ikke hentet endnu','Kør Lunar Liga-scriptet under Opdater igen.'));return}
+    const vc=el('div','chips');vc.style.margin='14px 0 0';
+    [['tabel','Stilling og kampe'],['hold','Hold og spillere']].forEach(([k,l])=>{const b=el('button','chip',l);b.type='button';b.setAttribute('aria-pressed',String(f.view===k));b.addEventListener('click',()=>{f.view=k;saveLl();render()});vc.append(b)});
+    out.append(vc);
+    if(f.view==='hold'){
+      const h2t=el('h2',null,'Hold og spillere · Øst '+poolName(cur));h2t.style.marginTop='20px';h2t.style.marginBottom='8px';out.append(h2t);
+      if(!rec.teams||!rec.teams.length){out.append(emptyBox('Holdene er ikke hentet endnu','Kør Lunar Liga-scriptet under Opdater igen.'));return}
+      const pos={};(rec.st||[]).forEach(t=>{pos[t.id]=t.p;pos[t.n]=t.p});
+      const tl=rec.teams.slice().sort((a,b)=>(pos[a.id]??pos[a.n]??99)-(pos[b.id]??pos[b.n]??99)||a.n.localeCompare(b.n));
+      tl.forEach(t=>{
+        const me=isMy(t);
+        const d=el('details','tmd'+(me?' me':''));if(me)d.open=true;
+        const sm=el('summary');
+        const l=el('span',null,t.n+(me?' ★':''));
+        sm.append(l,el('span','sm',t.pl.length+' spillere'+(t.pw!=null?' · holdstyrke '+Number(t.pw).toFixed(2):'')));
+        d.append(sm);
+        const players=t.pl.slice().sort((a,b)=>(b.cap-a.cap)||a.n.localeCompare(b.n));
+        players.forEach(p=>{
+          const r=el('div','plr');
+          const pn=el('div','pn');
+          if(p.u){const a=el('a',null,p.n);a.href='https://www.rankedin.com'+p.u;a.target='_blank';a.rel='noopener';pn.append(a)}else pn.append(document.createTextNode(p.n));
+          if(p.cap){const c=el('span','cc','Kaptajn');pn.append(c)}
+          r.append(pn);
+          d.append(r);
+        });
+        out.append(d);
+      });
+      out.append(el('div','note','Holdstyrke er holdets samlede niveau på Rankedin. Rankedin oplyser ikke den enkelte spillers rating i holdlisten. Holdene kan have flere spillere, end der stiller op i hver kamp.'));
+      return;
+    }
+    // stilling
+    const h2s=el('h2',null,'Stilling · Øst '+poolName(cur));h2s.style.marginTop='20px';h2s.style.marginBottom='8px';out.append(h2s);
+    const tb=el('div','stt');
+    const hd=el('div','str hd');['#','Hold','K','V-U-T','P'].forEach((t,i)=>{const c=el('div',i===1?'':(i===4?'pt':'c'),t);hd.append(c)});tb.append(hd);
+    rec.st.slice().sort((a,b)=>(a.p||99)-(b.p||99)).forEach(t=>{
+      const r=el('div','str'+(isMy({id:t.id,n:t.n})?' me':''));
+      r.append(el('div','c',String(t.p??'')),el('div','nm',t.n),el('div','c',String(t.pl??0)),el('div','c',(t.w??0)+'-'+(t.d??0)+'-'+(t.l??0)),el('div','pt',String(t.mp??0)));
+      tb.append(r);
+    });
+    out.append(tb);
+    const nt=el('div','note','K = kampe, V-U-T = vundet, uafgjort, tabt, P = kamppoint.');nt.style.marginTop='8px';out.append(nt);
+    // kampe
+    const today=cph(Date.now()).date;
+    const rounds=(rec.rounds||[]).map(r=>({r,key:dmy(r.d)}));
+    const upcoming=rounds.filter(x=>!x.key||x.key>=today||x.r.m.some(m=>m.a.r===''&&m.b.r===''));
+    const mineOk=cur.id===MY.pool;
+    const mode=(f.show==='mine'&&mineOk)?'mine':(f.show!=='alle'&&upcoming.length)?'kommende':'alle';
+    const head=el('div');head.style.cssText='display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:22px;margin-bottom:4px;flex-wrap:wrap';
+    const h2k=el('h2',null,'Kampe');h2k.style.margin='0';head.append(h2k);
+    const chs=el('div','chips');
+    const opts=[['kommende','Kommende'],['alle','Alle runder']];
+    if(mineOk) opts.unshift(['mine','Mit hold']);
+    opts.forEach(([k,l])=>{const b=el('button','chip',l);b.type='button';b.setAttribute('aria-pressed',String(k===mode));b.addEventListener('click',()=>{f.show=k;saveLl();render()});chs.append(b)});
+    head.append(chs);out.append(head);
+    const hasMine=m=>isMy(m.a)||isMy(m.b);
+    let list=mode==='kommende'?upcoming:rounds;
+    if(mode==='mine') list=rounds.map(x=>({r:Object.assign({},x.r,{m:x.r.m.filter(hasMine)}),key:x.key})).filter(x=>x.r.m.length);
+    if(!list.length) out.append(emptyBox('Ingen kampe','Kampprogrammet er ikke offentliggjort.'));
+    list.forEach(({r,key})=>{
+      const eb=el('div','eyebrow','Runde '+r.n+(key?' · '+dayText(key):''));eb.style.margin='16px 0 8px';out.append(eb);
+      const ul=el('ul','list');
+      r.m.forEach(m=>{
+        const li=el('li','lmatch'+(hasMine(m)?' me':''));
+        [m.a,m.b].forEach(t=>{
+          const x=el('div','tm'+(t.w?' win':''));
+          x.append(el('span','who',t.n||'Afventer'),el('span','sc',t.r));
+          li.append(x);
+        });
+        const meta=[m.time,[m.loc,m.city].filter(Boolean).join(', ')].filter(Boolean).join(' · ');
+        const lm=el('div','lm');lm.append(el('span',null,meta||'Sted ikke oplyst'));
+        if(m.id){const a=el('a','go','Se kamp ↗');a.href='https://www.rankedin.com/en/team/matchresults/'+m.id;a.target='_blank';a.rel='noopener';lm.append(a)}
+        li.append(lm);ul.append(li);
+      });
+      out.append(ul);
+    });
+    out.append(el('div','note','Data fra Rankedin (Lunar Ligaen efterår 2026).'));
+  }
+  function emptyBox(h,p){const b=el('div','empty');b.append(el('strong',null,h),el('div',null,p));return b}
+
+  function drawChips(){
+    chipRow($('chLevel'),LEVEL_CHIPS.map(l=>[l,'DPF '+l+(l===500?'+':'')]),v=>state.levels.has(v),v=>{toggle(state.levels,v);saveFilters();drawChips();render()});
+    chipRow($('chGender'),GENDER_CHIPS,v=>state.genders.has(v),v=>{toggle(state.genders,v);saveFilters();drawChips();render()});
+    chipRow($('chRegion'),REGION_CHIPS,v=>state.region===v,v=>{state.region=v;saveFilters();drawChips();render()});
+  }
+  $('unkToggle').checked=state.unk;
+  $('unkToggle').addEventListener('change',e=>{state.unk=e.target.checked;saveFilters();render()});
+  $('filtBtn').addEventListener('click',()=>{
+    const open=$('panel').hidden;$('panel').hidden=!open;
+    $('filtBtn').setAttribute('aria-expanded',String(open));$('filters').dataset.open=String(open);
+  });
+  function setTab(t){
+    state.tab=t;
+    $('tabAll').setAttribute('aria-selected',String(t==='alle'));
+    $('tabFav').setAttribute('aria-selected',String(t==='fav'));
+    $('tabFin').setAttribute('aria-selected',String(t==='fin'));
+    render();
+  }
+  $('tabAll').addEventListener('click',()=>setTab('alle'));
+  $('tabFav').addEventListener('click',()=>setTab('fav'));
+  $('tabFin').addEventListener('click',()=>setTab('fin'));
+  function setMode(m){
+    state.mode=m;store.set('pt.mode',m);
+    $('modeTur').setAttribute('aria-selected',String(m==='tur'));
+    $('modeLL').setAttribute('aria-selected',String(m==='ll'));
+    $('modeCrt').setAttribute('aria-selected',String(m==='baner'));
+    render();
+  }
+  $('modeTur').addEventListener('click',()=>setMode('tur'));
+  $('modeLL').addEventListener('click',()=>setMode('ll'));
+  $('modeCrt').addEventListener('click',()=>setMode('baner'));
+  $('modeTur').setAttribute('aria-selected',String(state.mode==='tur'));
+  $('modeCrt').setAttribute('aria-selected',String(state.mode==='baner'));
+  $('modeLL').setAttribute('aria-selected',String(state.mode==='ll'));
+
+  function status(msg,err){const s=$('status');s.textContent=msg;s.className='status'+(err?' err':'')}
+  function updateLinks(){
+    $('apiLink').href=apiUrl(0);
+    const have=state.isSeed?0:state.events.length;
+    const more=state.total&&state.total>have&&!state.isSeed;
+    $('nextWrap').hidden=!more;
+    if(more) $('nextLink').href=apiUrl(have);
+  }
+  (function(){
+    const root=document.documentElement,b=$('themeBtn');
+    const isDark=()=>{const t=root.getAttribute('data-theme');return t?t==='dark':(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)};
+    const paint=()=>{b.textContent=isDark()?'Lys':'Mørk'};
+    try{const t=localStorage.getItem('padel:theme');if(t==='dark'||t==='light')root.setAttribute('data-theme',t)}catch(e){}
+    paint();
+    b.addEventListener('click',()=>{const n=isDark()?'light':'dark';root.setAttribute('data-theme',n);try{localStorage.setItem('padel:theme',n)}catch(e){}paint()});
+  })();
+  $('updBtn').addEventListener('click',()=>{
+    const open=$('update').hidden;$('update').hidden=!open;$('updBtn').setAttribute('aria-expanded',String(open));updateLinks();
+  });
+  function parseJson(raw){
+    try{return JSON.parse(raw)}catch(e){
+      if(raw[0]==='"'){for(const t of ['{'+raw,'{'+raw+'}']){try{return JSON.parse(t)}catch(e3){}}}
+      const i=Math.min(...['{','['].map(c=>{const k=raw.indexOf(c);return k<0?Infinity:k}));
+      const j=Math.max(raw.lastIndexOf('}'),raw.lastIndexOf(']'));
+      if(!isFinite(i)||j<i) throw new Error('Teksten kunne ikke læses. Tjek at du har kopieret hele siden.');
+      try{return JSON.parse(raw.slice(i,j+1))}catch(e2){throw new Error('Teksten kunne ikke læses. Tjek at du har kopieret hele siden.')}
+    }
+  }
+  $('loadBtn').addEventListener('click',async()=>{
+    const raw=$('paste').value.trim();
+    if(!raw){status('Indsæt teksten først.',true);return}
+    let obj;
+    try{obj=parseJson(raw)}catch(e){status(e.message,true);return}
+    if(obj&&obj.bundle===3){
+      try{await importLunar(obj);$('paste').value=''}
+      catch(e){status('Noget gik galt under gemning: '+(e.message||e.code||'ukendt fejl'),true)}
+      return;
+    }
+    if(obj&&obj.bundle===2){
+      try{await importCourts(obj);$('paste').value=''}
+      catch(e){status('Noget gik galt under gemning: '+(e.message||e.code||'ukendt fejl'),true)}
+      return;
+    }
+    if(obj&&obj.bundle===1){
+      try{await importBundle(obj);$('paste').value=''}
+      catch(e){status('Noget gik galt under gemning: '+(e.message||e.code||'ukendt fejl'),true)}
+      return;
+    }
+    const arr=Array.isArray(obj)?obj:obj.payload;
+    if(!Array.isArray(arr)||!arr.length||!arr[0].eventId){status('Jeg kunne ikke finde nogen turneringer i teksten.',true);return}
+    const incoming=arr.filter(x=>x&&x.eventId&&x.eventName&&x.startDate).map(mapEvent);
+    const base=state.isSeed?[]:state.events;
+    const map=new Map(base.map(e=>[e.id,e]));
+    incoming.forEach(e=>map.set(e.id,e));
+    state.events=[...map.values()];
+    state.total=obj.totalCount||state.total;
+    state.savedAt=new Date().toISOString();
+    state.isSeed=false;
+    $('paste').value='';
+    status('Indlæst. Du har nu '+state.events.length+(state.total?' af '+state.total:'')+' turneringer.');
+    updateLinks();render();
+    persistList().catch(dbErr);
+  });
+  $('copyScript').addEventListener('click',async()=>{
+    const code=buildScript([...state.levels].sort((a,b)=>a-b),[...state.genders],state.region);
+    try{await navigator.clipboard.writeText(code);$('scriptBox').hidden=true;status('Scriptet er kopieret. Indsæt det i konsollen på computeren.')}
+    catch(e){const b=$('scriptBox');b.value=code;b.hidden=false;b.focus();b.select();status('Kunne ikke kopiere automatisk. Markér teksten i feltet og kopier den.',true)}
+  });
+  $('copyCourts').addEventListener('click',async()=>{
+    const code=buildCourtsScript();
+    try{await navigator.clipboard.writeText(code);$('scriptBox').hidden=true;status('Baneskriptet er kopieret. Indsæt det i konsollen på computeren.')}
+    catch(e){const b=$('scriptBox');b.value=code;b.hidden=false;b.focus();b.select();status('Kunne ikke kopiere automatisk. Markér teksten i feltet og kopier den.',true)}
+  });
+  $('copyLL').addEventListener('click',async()=>{
+    const code=buildLunarScript();
+    try{await navigator.clipboard.writeText(code);$('scriptBox').hidden=true;status('Lunar Liga-scriptet er kopieret. Indsæt det i konsollen på computeren.')}
+    catch(e){const b=$('scriptBox');b.value=code;b.hidden=false;b.focus();b.select();status('Kunne ikke kopiere automatisk. Markér teksten i feltet og kopier den.',true)}
+  });
+  async function importLunar(b){
+    if(!b.pools||typeof b.pools!=='object') throw new Error('Pakken ser ikke ud som forventet.');
+    const ids=Object.keys(b.pools).filter(id=>b.pools[id]&&Array.isArray(b.pools[id].st));
+    state.importing=true;
+    try{
+      status('Gemmer Lunar Liga …');
+      for(const id of ids){const v=b.pools[id];if(db) await dbSet('lunar/'+id,{rounds:v.rounds,st:v.st,teams:v.teams||[],savedAt:v.savedAt||b.at})}
+      ids.forEach(id=>{const v=b.pools[id];state.ll[id]={rounds:v.rounds,st:v.st,teams:v.teams||[],savedAt:v.savedAt||b.at}});
+      if(!db) store.set('pt.ll',state.ll);
+    } finally {state.importing=false}
+    refreshAll();
+    const n=ids.reduce((a,id)=>a+b.pools[id].rounds.reduce((x,r)=>x+r.m.length,0),0);
+    status('Færdig. Lunar Liga: '+ids.length+' puljer og '+n+' kampe.');
+  }
+  async function importCourts(b){
+    if(!b.clubs||typeof b.clubs!=='object') throw new Error('Pakken ser ikke ud som forventet.');
+    const ids=Object.keys(b.clubs).filter(id=>b.clubs[id]&&b.clubs[id].days&&Object.keys(b.clubs[id].days).length);
+    state.importing=true;
+    try{
+      status('Gemmer baner …');
+      for(const id of ids){if(db) await dbSet('baner/'+id,{days:b.clubs[id].days,savedAt:b.at})}
+      ids.forEach(id=>{state.crt[id]={days:b.clubs[id].days,savedAt:b.at}});
+      if(!db) store.set('pt.baner',state.crt);
+    } finally {state.importing=false}
+    refreshAll();
+    const n=ids.reduce((a,id)=>a+Object.keys(b.clubs[id].days).length,0);
+    status('Færdig. Ledige baner for '+ids.length+' klubber og '+n+' dage.');
+  }
+  async function importBundle(b){
+    if(!Array.isArray(b.events)||!b.det) throw new Error('Pakken ser ikke ud som forventet.');
+    const ids=Object.keys(b.det);
+    const dcids=Object.keys(b.draws||{});
+    const rcids=Object.keys(b.results||{});
+    state.importing=true; // databasens egne opdateringer må ikke overskrive det, vi er ved at gemme
+    try{
+      state.events=b.events;state.total=b.total||b.events.length;state.savedAt=b.at||new Date().toISOString();state.isSeed=false;
+      const merged={};
+      ids.forEach(id=>{const base=det[id]||{};merged[id]={info:b.det[id].info,players:Object.assign({},base.players||{},b.det[id].players||{})}});
+      status('Gemmer …');
+      await persistList();
+      if(Array.isArray(b.fin)){state.fin=b.fin;state.finAt=b.at||new Date().toISOString();await persistFin()}
+      let i=0;
+      for(const id of ids){
+        if(db) await dbSet('tournaments/'+id,{info:merged[id].info||null,players:merged[id].players});
+        i++;if(i%10===0)status('Gemmer '+i+' af '+ids.length+' turneringer …');
+      }
+      for(const cid of dcids){const x=b.draws[cid];if(db) await dbSet('draws/'+cid,{tid:+x.tid,draws:x.draws,savedAt:x.savedAt})}
+      for(const cid of rcids){const x=b.results[cid];if(db) await dbSet('results/'+cid,{tid:+x.tid,rows:x.rows,savedAt:x.savedAt})}
+      rcids.forEach(cid=>{const x=b.results[cid];const d=det[x.tid]||(det[x.tid]={});(d.results||(d.results={}))[cid]={rows:x.rows,savedAt:x.savedAt}});
+      ids.forEach(id=>{const d=det[id]||(det[id]={});d.info=merged[id].info;d.players=merged[id].players});
+      dcids.forEach(cid=>{const x=b.draws[cid];const d=det[x.tid]||(det[x.tid]={});(d.draws||(d.draws={}))[cid]={draws:x.draws,savedAt:x.savedAt}});
+      if(!db) store.set('pt.det',det);
+    } finally {
+      state.importing=false;
+    }
+    refreshAll();
+    const rows=ids.reduce((n,id)=>n+Object.keys(b.det[id].players||{}).length,0);
+    status('Færdig. '+b.events.length+' turneringer, '+ids.length+' med Info, '+rows+' rækker med spillere'+(dcids.length?', '+dcids.length+' med kampe':'')+(Array.isArray(b.fin)?', '+b.fin.length+' afsluttede turneringer og '+rcids.length+' rækker med resultater':'')+'.'+(b.failed&&b.failed.length?' '+b.failed.length+' rækker kunne ikke hentes. Se konsollen for hvilke.':''));
+    updateLinks();
+  }
+
+  /* ---------- detaljeside ---------- */
+  function ingestInfo(id,obj){
+    const m=obj&&obj.TournamentSidebarModel;
+    if(!m) throw new Error('Det ligner ikke Info-data. Tjek at du har åbnet den rigtige adresse.');
+    if(m.TournamentId!==id) throw new Error('Det er data for en anden turnering. Åbn linket herfra og prøv igen.');
+    const d=det[id]||(det[id]={});
+    const oldReg=d.info&&d.info.reg;
+    d.info=mapInfo(m);
+    if(oldReg) d.info.reg=oldReg;
+    persistTournament(id).catch(dbErr);
+    return 'Info gemt. '+d.info.classes.length+' rækker fundet.';
+  }
+  function ingestPlayers(id,cid,obj){
+    if(!obj||typeof obj!=='object'||Array.isArray(obj)||!('Participants' in obj)) throw new Error('Det ligner ikke spillerdata for en række.');
+    const rec=mapPlayers(obj);
+    const d=det[id]||(det[id]={});
+    (d.players||(d.players={}))[cid]=rec;
+    persistTournament(id).catch(dbErr);
+    return rec.pairs.length+' par gemt.';
+  }
+  function ingestReg(id,obj){
+    const t=regText(obj);
+    if(!t) throw new Error('Der var ingen tekst i svaret. Tjek at du har åbnet den rigtige adresse.');
+    const d=det[id];
+    if(!d||!d.info) throw new Error('Hent først Info for turneringen.');
+    d.info.reg=t;
+    persistTournament(id).catch(dbErr);
+    return regTimes(t).length?'Regulativ gemt. Fandt forventede tider for '+regTimes(t).length+' rækker.':'Regulativ gemt. Fandt ingen forventede tider i teksten.';
+  }
+  function ingestResults(id,cid,obj){
+    if(!obj||!Array.isArray(obj.Data)) throw new Error('Det ligner ikke resultatdata for en række.');
+    const rec=mapResults(obj);
+    const d=det[id]||(det[id]={});
+    (d.results||(d.results={}))[cid]=rec;
+    persistResult(id,cid).catch(dbErr);
+    return rec.rows.length?'Resultater gemt.':'Der er ingen resultater i denne række.';
+  }
+  function ingestDraws(id,cid,arr){
+    if(!Array.isArray(arr)) throw new Error('Det ligner ikke kampdata for en række.');
+    const rec=mapDraws(arr);
+    const d=det[id]||(det[id]={});
+    (d.draws||(d.draws={}))[cid]=rec;
+    persistDraw(id,cid).catch(dbErr);
+    return rec.draws.length?'Kampe gemt.':'Der er endnu ingen kampe i denne række.';
+  }
+
+  let panelSeq=0;
+  function fetchPanel(intro,url,save){
+    const n=++panelSeq;
+    const box=el('div','update');
+    box.append(el('div','eyebrow','Hent data fra Rankedin'));
+    box.append(el('p',null,intro));
+    const a=el('a','ext','Åbn data fra Rankedin ↗');a.href=url;a.target='_blank';a.rel='noopener';
+    const ol=el('ol');
+    const l1=el('li');l1.append(a,document.createTextNode(' (åbner som ren tekst).'));
+    ol.append(l1,el('li',null,'Vælg al teksten og kopier den.'),el('li',null,'Indsæt den her og tryk Gem.'));
+    box.append(ol);
+    const ta=document.createElement('textarea');ta.id='dpaste-'+n;ta.setAttribute('aria-label','Indsæt data fra Rankedin');
+    const st=el('div','status');st.setAttribute('role','status');
+    const btn=el('button','btn primary','Gem');btn.type='button';
+    btn.addEventListener('click',()=>{
+      const raw=ta.value.trim();
+      if(!raw){st.textContent='Indsæt teksten fra Rankedin først.';st.className='status err';return}
+      try{const msg=save(parseJson(raw));st.textContent=msg;st.className='status';ta.value='';setTimeout(renderDetail,350)}
+      catch(e){st.textContent=e.message;st.className='status err'}
+    });
+    const row=el('div','row');row.append(btn);
+    box.append(ta,row,st);
+    return box;
+  }
+  function updater(label,intro,url,save){
+    const d=el('details');d.append(el('summary',null,label));d.append(fetchPanel(intro,url,save));return d;
+  }
+
+  const levelHit=name=>{const r=classify(name,selNow());return r.status==='match'};
+  function sortClasses(classes){
+    const gRank=n=>{const g=genderOf(n);return g.has('h')?0:g.has('d')?1:g.has('m')?2:3};
+    const lvl=n=>Math.max(0,...levelsIn(n));
+    const wl=n=>isWaiting(n)?1:0;
+    return classes.slice().sort((a,b)=>wl(a.name)-wl(b.name)||gRank(a.name)-gRank(b.name)||lvl(b.name)-lvl(a.name)||a.name.localeCompare(b.name));
+  }
+  function infoTab(id,out){
+    const d=det[id]||{};const inf=d.info;
+    if(!inf){
+      out.append(el('p','note','Info om rækker, priser og tilmelding hentes fra Rankedin første gang.'));
+      out.append(fetchPanel('Du skal kun hente Info én gang for denne turnering.',URL_INFO(id),obj=>ingestInfo(id,obj)));
+      return;
+    }
+    const dl=el('dl','dl');
+    const row=(k,v)=>{if(v===undefined||v===null||v==='')return;dl.append(el('dt',null,k),el('dd',null,String(v)))};
+    row('Start',fmtDT(inf.start));row('Slut',fmtDT(inf.end));
+    row('Tilmelding til',inf.closing?fmtDT(inf.closing):'');
+    row('Sted',inf.club+(inf.address?', '+inf.address:''));
+    row('Tilmeldte',inf.count!=null?inf.count+' spillere':'');
+    const prices=[...new Set((inf.fees||[]).map(x=>Math.round(x.price)+' '+(x.cur||'kr.')))];
+    row('Deltagergebyr',prices.length===1?prices[0]+' pr. spiller':prices.length>1?'Varierer, se rækkerne nedenfor':(inf.fee&&!/^0\b/.test(inf.fee)?inf.fee:'Ikke oplyst i Rankedins data'));
+    row('Betaling',inf.payType===4?'Stripe':inf.payUrl?'Ekstern betaling':'');
+    row('Præmie',inf.prize);row('Rangliste',inf.ranking);row('Arrangør',inf.admins.join(', '));
+    out.append(dl);
+    out.append(el('h2',null,'Rækker · '+inf.classes.length));
+    if(inf.reg){const rd=el('details');rd.append(el('summary',null,'Regulativ fra arrangøren'));const pre=el('div',null,inf.reg);pre.style.cssText='white-space:pre-wrap;font-size:14px;margin-top:8px';rd.append(pre);out.append(rd)}
+    const ul=el('ul','cls');
+    sortClasses(inf.classes).forEach(c=>{
+      const li=el('li');
+      const left=el('div');left.append(el('div','n',c.name));
+      if(levelHit(c.name)&&!isWaiting(c.name)){const t=el('span','tag hit','Matcher dine filtre');t.style.display='inline-block';t.style.marginTop='4px';left.append(t)}
+      const st=classStart(id,c.id);
+      const rt=regTimeFor(inf,c.name);
+      const sl=el('div','cstart',rt?'Forventet start: '+rt.replace(/\s*\(.*$/,''):st?'Starter '+fmtDT(new Date(st).toISOString()):'Starttid ikke oplyst endnu');
+      sl.style.cssText='font-size:13px;margin-top:4px;'+((rt||st)?'font-weight:600;color:var(--court)':'color:var(--muted)');
+      left.append(sl);
+      const fee=inf.fees.find(x=>x.name===c.name);
+      li.append(left,el('div','p',fee?Math.round(fee.price)+' '+(fee.cur||'kr.'):''));
+      ul.append(li);
+    });
+    out.append(ul);
+    if(inf.double) out.append(el('p','note','Ved par-rækker betaler hver spiller sit eget gebyr.'));
+    out.append(el('div','note','Opdateret '+fmtDT(inf.savedAt)));
+    out.append(updater('Hent regulativ','Henter arrangørens regulativ med forventede starttider for rækkerne.',URL_REG(id),obj=>ingestReg(id,obj)));
+    out.append(updater('Hent Info igen','Hent nye data, hvis der er sket ændringer.',URL_INFO(id),obj=>ingestInfo(id,obj)));
+  }
+  const normN=x=>String(x||'').toLowerCase().replace(/[^a-z0-9æøå]/g,'');
+  function regTimes(text){
+    const out=[];
+    String(text||'').split(/udbudt\s+række\s*:/i).slice(1).forEach(b=>{
+      const g=re=>{const m=b.match(re);return m?m[1].trim():''};
+      const t=g(/forventet\s+afviklingstidspunkt\s*:\s*([^\n]+)/i);
+      if(!t) return;
+      out.push({offer:g(/^\s*([^\n]+)/),reg:g(/tilmeldingsrække[s]?\s*navn\s*:\s*([^\n]+)/i),t:t});
+    });
+    return out;
+  }
+  function regTimeFor(inf,cname){
+    const list=regTimes(inf&&inf.reg);if(!list.length) return '';
+    const n=normN(cname);
+    let hit=list.find(x=>normN(x.reg)===n)||list.find(x=>normN(x.offer)===n);
+    if(!hit) hit=list.find(x=>{const r=normN(x.reg),o=normN(x.offer);return (r&&(n.includes(r)||r.includes(n)))||(o&&(n.includes(o)||o.includes(n)))});
+    return hit?hit.t:'';
+  }
+  function classStart(tid,cid){
+    const rec=det[tid]&&det[tid].draws&&det[tid].draws[cid];
+    if(!rec||!rec.draws) return null;
+    let min=null;
+    rec.draws.forEach(dr=>(dr.cells||[]).forEach(c=>{if(!c.date)return;const t=new Date(c.date).getTime();if(!isNaN(t)&&(min===null||t<min))min=t}));
+    return min;
+  }
+  function classPicker(id,out){
+    const inf=det[id]&&det[id].info;
+    if(!inf){out.append(el('div','empty','Hent først Info under fanen Info, så kender appen turneringens rækker.'));return null}
+    const list=sortClasses(inf.classes);
+    if(!list.some(c=>c.id===state.dcls)) state.dcls=list.length?list[0].id:null;
+    const chips=el('div','chips');
+    list.forEach(c=>{
+      const b=el('button','chip',c.name);b.type='button';b.setAttribute('aria-selected',String(c.id===state.dcls));
+      b.addEventListener('click',()=>{state.dcls=c.id;renderDetail()});
+      chips.append(b);
+    });
+    out.append(chips);
+    return list.find(c=>c.id===state.dcls)||null;
+  }
+  const nameKey=n=>n.map(x=>x.toLowerCase().trim()).sort().join('|');
+  function side2(p,isWin,seeds){
+    const s=el('div','side2'+(isWin?' win':'')+(!p.n.length?' pend':''));
+    const who=el('span','who');
+    const sd=p.seed||(seeds&&p.n.length?seeds[nameKey(p.n)]:'')||'';
+    if(sd){const b=el('span','seed',sd);b.title='Seedet '+sd;who.append(b)}
+    who.append(document.createTextNode(p.n.length?p.n.join(' / '):'Afventer'));
+    s.append(who);
+    return s;
+  }
+  function drawsTab(id,out){
+    const c=classPicker(id,out);if(!c)return;
+    const rec=det[id].draws&&det[id].draws[c.id];
+    const save=obj=>ingestDraws(id,c.id,obj);
+    const seeds={};
+    const pr=det[id].players&&det[id].players[c.id];
+    if(pr) pr.pairs.forEach(pp=>{if(pp.seed){const n=[pp.a&&pp.a.name,pp.b&&pp.b.name].filter(Boolean);if(n.length)seeds[nameKey(n)]=String(pp.seed)}});
+    if(!rec){
+      const ev=findEvent(id);
+      const wk=ev&&new Date(ev.e).getTime()>Date.now()?new Date(new Date(ev.s).getTime()-7*864e5):null;
+      out.append(el('p','note','Kampene for '+c.name+' er ikke hentet endnu.'+(wk&&wk.getTime()>Date.now()?' Kampprogrammet offentliggøres typisk ca. en uge før start, altså omkring '+wk.getDate()+'. '+MON[wk.getMonth()]+'. Du kan vente med at hente det.':'')));
+      out.append(fetchPanel('Du skal kun hente kampene én gang pr. række, men det kan være en god idé at hente dem igen under turneringen for at se resultater.',URL_DRAWS(c.id),save));
+      return;
+    }
+    if(!rec.draws.length) out.append(el('div','empty','Der er endnu ingen kampe i denne række. Kampprogrammet offentliggøres typisk ca. en uge før turneringen starter.'));
+    rec.draws.forEach(dr=>{
+      if(dr.kind!=='elim'){out.append(el('div','empty','Puljespil og andre formater vises ikke her endnu. Åbn rækken på Rankedin for at se dem.'));return}
+      out.append(el('h2',null,dr.cons===1?'Hovedtræ':'Placeringskampe, plads '+dr.ps+'–'+dr.pe));
+      const rounds=new Map();
+      dr.cells.slice().sort((a,b)=>a.r-b.r||a.o-b.o).forEach(m=>{if(!rounds.has(m.r))rounds.set(m.r,[]);rounds.get(m.r).push(m)});
+      rounds.forEach((ms,r)=>{
+        if(dr.cons===1||rounds.size>1) out.append(el('div','eyebrow',dr.cons===1?roundLabel(r,ms[0].max):'Runde '+r));
+        const ul=el('ul','list');
+        ms.forEach(m=>{
+          const li=el('li','match');
+          const mt=el('div','mt');
+          mt.append(el('span',null,(m.date?fmtDT(m.date):'')),el('span',null,m.court));
+          const aw=m.fw===true||(m.w&&m.w===m.a.pid),bw=m.fw===false||(m.w&&m.w===m.b.pid);
+          li.append(mt,side2(m.a,aw,seeds),side2(m.b,bw,seeds));
+          if(m.score){const sc=el('div','score',m.score);li.append(sc)}
+          ul.append(li);
+        });
+        out.append(ul);
+      });
+    });
+    out.append(el('div','note','Opdateret '+fmtDT(rec.savedAt)));
+    out.append(updater('Hent kampe igen','Hent nye data for at se seneste resultater.',URL_DRAWS(c.id),save));
+  }
+  function resultsTab(id,out){
+    const c=classPicker(id,out);if(!c)return;
+    const rec=det[id].results&&det[id].results[c.id];
+    const inf=det[id].info;
+    const url=URL_RESULTS(id,c.id,inf&&inf.rankIds&&inf.rankIds[0]);
+    const save=obj=>ingestResults(id,c.id,obj);
+    if(!rec){
+      out.append(el('p','note','Resultater for '+c.name+' er ikke hentet endnu. De hentes automatisk for afsluttede turneringer, når du kører scriptet under Opdater.'));
+      out.append(fetchPanel('Du kan også hente resultaterne for denne række her.',url,save));
+      return;
+    }
+    if(!rec.rows.length){out.append(el('div','empty','Der er ingen resultater eller point i denne række. Det gælder fx ventelister.'));return}
+    out.append(el('h2',null,'Resultater · '+rec.rows.length+' par'));
+    const ul=el('ul','pairs');
+    rec.rows.slice().sort((a,b)=>(a.st||999)-(b.st||999)).forEach(p=>{
+      const li=el('li','pair');
+      li.append(el('div','no',p.to&&p.to>p.st?p.st+'–'+p.to:String(p.st)));
+      const nm=el('div','nm');
+      [p.a,p.b].filter(Boolean).forEach(x=>{
+        const s=el('span',null,x.name);
+        if(x.b!=null&&x.e!=null&&x.b!==x.e) s.append(el('span','cc',x.b.toFixed(2)+' → '+x.e.toFixed(2)));
+        nm.append(s);
+      });
+      const rt=el('div','rt');
+      rt.append(el('b',null,p.pts!=null?String(Math.round(p.pts*100)/100):'–'),document.createTextNode('DPF-point'));
+      li.append(nm,rt);ul.append(li);
+    });
+    out.append(ul);
+    out.append(el('div','note','Opdateret '+fmtDT(rec.savedAt)));
+    out.append(updater('Hent resultater igen','Hent nye data, hvis der er sket ændringer.',url,save));
+  }
+  function playersTab(id,out){
+    const c=classPicker(id,out);if(!c)return;
+    const rec=det[id].players&&det[id].players[c.id];
+    const save=obj=>ingestPlayers(id,c.id,obj);
+    if(!rec){
+      out.append(el('p','note','Spillerne i '+c.name+' er ikke hentet endnu.'));
+      out.append(fetchPanel('Du skal kun hente spillerne én gang pr. række.',URL_PLAYERS(id,c.id),save));
+      return;
+    }
+    out.append(el('h2',null,rec.pairs.length+' par'));
+    if(!rec.pairs.length) out.append(el('div','empty','Der er ingen tilmeldte i denne række endnu.'));
+    const ul=el('ul','pairs');
+    rec.pairs.forEach((p,i)=>{
+      const li=el('li','pair');
+      li.append(el('div','no',p.seed||String(i+1)));
+      const nm=el('div','nm');
+      [p.a,p.b].filter(Boolean).forEach(x=>{const s=el('span',null,x.name);if(x.cc)s.append(el('span','cc',x.cc));nm.append(s)});
+      const rt=el('div','rt');
+      const b=el('b',null,p.rank!=null&&p.rank!==''?String(p.rank):'–');rt.append(b,document.createTextNode('point'));
+      li.append(nm,rt);ul.append(li);
+    });
+    out.append(ul);
+    out.append(el('div','note','Opdateret '+fmtDT(rec.savedAt)));
+    out.append(updater('Hent spillere igen','Hent nye data, hvis der er kommet flere tilmeldte.',URL_PLAYERS(id,c.id),save));
+  }
+
+  function regStatus(e){
+    const inf=det[e.id]&&det[e.id].info;
+    if(!inf||!inf.closing) return null;
+    if(new Date(e.e).getTime()<Date.now()) return null;
+    return {closed:new Date(inf.closing).getTime()<Date.now(),when:inf.closing};
+  }
+  let curId=null;
+  function renderDetail(){
+    const root=$('detailView');root.textContent='';
+    const e=findEvent(curId);
+    const back=el('button','back','← Tilbage til listen');back.type='button';
+    back.addEventListener('click',()=>{location.hash=''});
+    root.append(back);
+    if(!e){root.append(emptyBox('Turneringen findes ikke i din liste','Gå tilbage og tryk Opdater for at hente listen igen.'));return}
+    const head=el('div','dhead');
+    head.append(el('h1','dtitle',e.n));
+    head.append(el('div','meta',fmtDate(e).when+' · '+(e.c||'')+(e.t?', '+e.t:'')));
+    const rs=regStatus(e);
+    if(rs){const t=el('span','tag'+(rs.closed?' unk':' hit'),rs.closed?'Tilmelding lukket '+fmtDT(rs.when):'Tilmelding åben til '+fmtDT(rs.when));t.style.alignSelf='flex-start';head.append(t)}
+    const over=new Date(e.e).getTime()<Date.now();
+    const closed=!!(rs&&rs.closed)||over;
+    const x=el('a','btn'+(closed?'':' primary'),closed?'Se turneringen på Rankedin ↗':'Tilmeld dig på Rankedin ↗');
+    x.href=link(e);x.target='_blank';x.rel='noopener';
+    x.style.cssText='align-self:flex-start;text-decoration:none;display:inline-block'+(closed?';color:var(--ink)':'');
+    head.append(x);root.append(head);
+    const tabs=el('div','tabs');tabs.setAttribute('role','tablist');
+    const dt=[['info','Info'],['draws','Draws'],['players','Players']];
+    if(new Date(e.e).getTime()<Date.now()||(det[curId]&&det[curId].results&&Object.keys(det[curId].results).length)) dt.push(['results','Results']);
+    if(!dt.some(([k])=>k===state.dtab)) state.dtab='info';
+    dt.forEach(([k,l])=>{
+      const b=el('button','tab',l);b.type='button';b.setAttribute('role','tab');b.setAttribute('aria-selected',String(state.dtab===k));
+      b.addEventListener('click',()=>{state.dtab=k;renderDetail()});tabs.append(b);
+    });
+    root.append(tabs);
+    const body=el('div');body.style.cssText='display:flex;flex-direction:column;gap:12px';
+    (state.dtab==='info'?infoTab:state.dtab==='draws'?drawsTab:state.dtab==='results'?resultsTab:playersTab)(curId,body);
+    root.append(body);
+  }
+  function route(){
+    const m=/^#t-(\d+)$/.exec(location.hash);
+    if(m){
+      curId=+m[1];state.dcls=null;
+      $('listView').hidden=true;$('listView').style.display='none';
+      $('detailView').hidden=false;$('detailView').style.display='contents';
+      renderDetail();window.scrollTo(0,0);
+    } else {
+      $('detailView').hidden=true;$('detailView').style.display='none';
+      $('listView').hidden=false;$('listView').style.display='contents';
+      render();window.scrollTo(0,state.lastScroll||0);
+    }
+  }
+  window.addEventListener('hashchange',route);
+
+  async function initData(){
+    try{if(window.claude&&window.claude.use) db=await window.claude.use('db')}catch(e){db=null}
+    state.dbReady=true;
+    if(!db&&STATIC){
+      $('updBtn').hidden=true;
+      for(const [url,fn] of [['data/tur.json',importBundle],['data/lunar.json',importLunar],['data/baner.json',importCourts]]){
+        try{const r=await fetch(url+'?t='+Date.now());if(!r.ok)continue;await fn(await r.json())}catch(e){console.error(url,e)}
+      }
+      refreshAll();return;
+    }
+    if(!db){if(window.claude)Object.assign(det,store.get('pt.det',{}));refreshAll();return}
+    const log=e=>console.error(e);
+    const clone=x=>JSON.parse(JSON.stringify(x));
+    db.doc('app/list').onSnapshot(s=>{
+      if(!s.exists||state.importing)return;
+      const d=clone(s.data());
+      if(Array.isArray(d.events)&&d.events.length){
+        state.events=d.events;state.total=d.total||null;state.savedAt=d.savedAt||null;state.isSeed=false;
+        store.set('pt.data',{events:state.events,total:state.total,savedAt:state.savedAt});updateLinks();
+      }
+      refreshAll();
+    },log);
+    db.doc('app/finished').onSnapshot(s=>{
+      if(!s.exists||state.importing)return;
+      const d=clone(s.data());
+      if(Array.isArray(d.events)){state.fin=d.events;state.finAt=d.savedAt||null;store.set('pt.fin',{events:state.fin,savedAt:state.finAt});refreshAll()}
+    },log);
+    db.collection('results').onSnapshot(q=>{
+      if(state.importing)return;
+      q.docs.forEach(x=>{const v=clone(x.data());const d=det[v.tid]||(det[v.tid]={});(d.results||(d.results={}))[x.id]={rows:v.rows,savedAt:v.savedAt}});
+      refreshAll();
+    },log);
+    db.collection('lunar').onSnapshot(q=>{
+      if(state.importing)return;
+      q.docs.forEach(x=>{const v=clone(x.data());state.ll[x.id]={rounds:v.rounds||[],st:v.st||[],teams:v.teams||[],savedAt:v.savedAt}});
+      refreshAll();
+    },log);
+    db.collection('baner').onSnapshot(q=>{
+      if(state.importing)return;
+      q.docs.forEach(x=>{const v=clone(x.data());state.crt[x.id]={days:v.days||{},savedAt:v.savedAt}});
+      refreshAll();
+    },log);
+    db.doc('app/prefs').onSnapshot(s=>{
+      if(!s.exists)return;const d=s.data();
+      if(Array.isArray(d.fav)){state.fav=new Set(d.fav);refreshAll()}
+    },log);
+    db.collection('tournaments').onSnapshot(q=>{
+      if(state.importing)return;
+      q.docs.forEach(x=>{const v=clone(x.data());const d=det[+x.id]||(det[+x.id]={});d.info=v.info;d.players=v.players||{}});
+      refreshAll();
+    },log);
+    db.collection('draws').onSnapshot(q=>{
+      if(state.importing)return;
+      q.docs.forEach(x=>{const v=clone(x.data());const d=det[v.tid]||(det[v.tid]={});(d.draws||(d.draws={}))[x.id]={draws:v.draws,savedAt:v.savedAt}});
+      refreshAll();
+    },log);
+  }
+  function refreshAll(){
+    if(!$('detailView').hidden){
+      const ta=document.querySelector('#detailView textarea');
+      if(!(ta&&ta.value)) renderDetail();
+    } else render();
+  }
+
+  drawChips();updateLinks();route();initData();
+})();
+</script>
