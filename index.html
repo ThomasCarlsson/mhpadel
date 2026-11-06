@@ -829,7 +829,13 @@ if(typeof module!=='undefined') module.exports={distKm,parseName,classify,classi
     }
     const today=cph(Date.now()).date;
     const dates=[...new Set(have.flatMap(id=>Object.keys(state.crt[id].days)))].filter(d=>d>=today).sort();
-    if(!dates.includes(cf.date)) cf.date=dates[0]||'';
+    if(!Array.isArray(cf.dates)) cf.dates=cf.date?[cf.date]:[];
+    cf.dates=cf.dates.filter(d=>dates.includes(d));
+    if(!cf.dates.length) cf.dates=dates.length?[dates[0]]:[];
+    if(!Array.isArray(cf.slots)) cf.slots=(cf.slot&&cf.slot!=='alle')?[cf.slot]:[];
+    if(!Array.isArray(cf.durs)) cf.durs=cf.dur?[cf.dur]:[];
+    if(!Array.isArray(cf.inouts)) cf.inouts=(cf.inout&&cf.inout!=='alle')?[cf.inout]:[];
+    if(!Array.isArray(cf.sizes)) cf.sizes=(cf.size&&cf.size!=='alle')?[cf.size]:[];
     const age=have.reduce((m,id)=>Math.min(m,new Date(state.crt[id].savedAt||0).getTime()),Infinity);
     const hrs=(Date.now()-age)/36e5;
     const nb=el('div','banner');
@@ -842,11 +848,20 @@ if(typeof module!=='undefined') module.exports={distKm,parseName,classify,classi
       items.forEach(([v,l])=>{const b=el('button','chip',l);b.type='button';b.setAttribute('aria-pressed',String(isOn(v)));b.addEventListener('click',()=>{onTap(v);saveCf();render()});ch.append(b)});
       g.append(ch);box.append(g);
     };
-    row('Dag',dates.map(d=>[d,dayLabel(d)]),v=>cf.date===v,v=>{cf.date=v});
-    row('Tidspunkt',SLOTS.map(x=>[x[0],x[1]]),v=>cf.slot===v,v=>{cf.slot=v});
-    row('Varighed',[[0,'Alle'],[60,'60 min'],[90,'90 min'],[120,'120 min']],v=>cf.dur===v,v=>{cf.dur=v});
-    row('Bane',[['alle','Alle'],['inde','Indendørs'],['ude','Udendørs']],v=>cf.inout===v,v=>{cf.inout=v});
-    row('Banetype',[['alle','Alle'],['double','Double'],['single','Single']],v=>cf.size===v,v=>{cf.size=v});
+    const tog=(arr,v)=>{const i=arr.indexOf(v);if(i>=0)arr.splice(i,1);else arr.push(v)};
+    const mrow=(label,items,arr,hasAll,keepOne)=>{
+      const g=el('div');g.append(el('div','eyebrow',label+(hasAll?'':' (vælg flere)')));
+      const ch=el('div','chips');ch.style.marginTop='6px';
+      const mk=(txt,on,fn)=>{const b=el('button','chip',txt);b.type='button';b.setAttribute('aria-pressed',String(on));b.addEventListener('click',()=>{fn();saveCf();render()});ch.append(b)};
+      if(hasAll) mk('Alle',arr.length===0,()=>{arr.length=0});
+      items.forEach(([v,l])=>mk(l,arr.includes(v),()=>{if(keepOne&&arr.length===1&&arr[0]===v)return;tog(arr,v)}));
+      g.append(ch);box.append(g);
+    };
+    mrow('Dag',dates.map(d=>[d,dayLabel(d)]),cf.dates,false,true);
+    mrow('Tidspunkt',SLOTS.filter(x=>x[0]!=='alle').map(x=>[x[0],x[1]]),cf.slots,true,false);
+    mrow('Varighed',[[60,'60 min'],[90,'90 min'],[120,'120 min']],cf.durs,true,false);
+    mrow('Bane',[['inde','Indendørs'],['ude','Udendørs']],cf.inouts,true,false);
+    mrow('Banetype',[['double','Double'],['single','Single']],cf.sizes,true,false);
     row('Afstand fra København',[[15,'15 km'],[30,'30 km'],[50,'50 km']],v=>cf.km===v,v=>{cf.km=v});
 
     const off=new Set(cf.off||[]);
@@ -869,11 +884,12 @@ if(typeof module!=='undefined') module.exports={distKm,parseName,classify,classi
       cch.append(b);
     });
     cg.append(cch);box.append(cg);
-    const sl=SLOTS.find(x=>x[0]===cf.slot)||SLOTS[0];
+    const SL=cf.slots.length?SLOTS.filter(x=>cf.slots.includes(x[0])):[];
     const sum=el('div','summary');sum.dataset.open=String(!!state.cOpen);
     const sbtn=el('button');sbtn.type='button';sbtn.setAttribute('aria-expanded',String(!!state.cOpen));
     const sl2=el('span');
-    const parts=[dayLabel(cf.date),sl[1],cf.dur?cf.dur+' min':'Alle varigheder',cf.inout==='inde'?'Indendørs':cf.inout==='ude'?'Udendørs':'Inde og ude',cf.size==='double'?'Double':cf.size==='single'?'Single':'Alle baner',cf.km+' km'];
+    const INO={inde:'Indendørs',ude:'Udendørs'},SIZ={double:'Double',single:'Single'};
+    const parts=[cf.dates.map(dayLabel).join(' + '),SL.length?SL.map(x=>x[1]).join(' + '):'Alle tider',cf.durs.length?cf.durs.slice().sort((a,b)=>a-b).join('/')+' min':'Alle varigheder',cf.inouts.length===1?INO[cf.inouts[0]]:'Inde og ude',cf.sizes.length===1?SIZ[cf.sizes[0]]:'Alle baner',cf.km+' km'];
     const nOff=pick.filter(c=>off.has(c.id)).length;
     if(nOff) parts.push((pick.length-nOff)+' af '+pick.length+' klubber');
     sl2.append(el('span','eyebrow','Mine filtre'),el('div','sumtext',parts.join(' · ')));
@@ -883,21 +899,21 @@ if(typeof module!=='undefined') module.exports={distKm,parseName,classify,classi
     out.append(sum);
     const nowMin=Date.now()/60000;
     const clubs=CLUBS.filter(c=>c.d<=cf.km&&state.crt[c.id]&&!off.has(c.id)&&true);
+    let anyGroups=false;
+    cf.dates.slice().sort().forEach(date=>{
     const groups=[];let totalSlots=0;
     clubs.forEach(c=>{
-      const day=(state.crt[c.id].days||{})[cf.date];if(!day)return;
+      const day=(state.crt[c.id].days||{})[date];if(!day)return;
       const by=new Map();
       day.s.forEach(([ci,st,du,pr])=>{
         if(st<=nowMin)return;
-        if(cf.dur&&du!==cf.dur)return;
+        if(cf.durs.length&&!cf.durs.includes(du))return;
         const ct=day.c[ci]||['?',-1];
-        if(cf.inout==='inde'&&ct[1]!==1)return;
-        if(cf.inout==='ude'&&ct[1]!==0)return;
+        if(cf.inouts.length&&!(cf.inouts.includes('inde')&&ct[1]===1)&&!(cf.inouts.includes('ude')&&ct[1]===0))return;
         const dm=ct[2]===undefined?1:ct[2];
-        if(cf.size==='double'&&dm===0)return;
-        if(cf.size==='single'&&dm!==0)return;
+        if(cf.sizes.length&&!(cf.sizes.includes('double')&&dm!==0)&&!(cf.sizes.includes('single')&&dm===0))return;
         const t=cph(st*60000);
-        if(t.h<sl[2]||t.h>=sl[3])return;
+        if(SL.length&&!SL.some(x=>t.h>=x[2]&&t.h<x[3]))return;
         const key=st+'|'+du;
         if(!by.has(key))by.set(key,{st,du,t,pr:pr,courts:[]});
         const g=by.get(key);g.pr=Math.min(g.pr,pr);g.courts.push(ct);
@@ -905,8 +921,8 @@ if(typeof module!=='undefined') module.exports={distKm,parseName,classify,classi
       const rows=[...by.values()].sort((a,b)=>a.st-b.st||a.du-b.du);
       if(rows.length){groups.push({c,rows});totalSlots+=rows.length}
     });
-    out.append(el('h2',null,dayLabel(cf.date)+' · '+totalSlots+' ledige tider i '+groups.length+' klubber'));
-    if(!groups.length){out.append(emptyBox('Ingen ledige baner med de valgte filtre','Prøv en anden dag, flere tidspunkter eller en anden varighed.'));return}
+    out.append(el('h2',null,dayLabel(date)+' · '+totalSlots+' ledige tider i '+groups.length+' klubber'));
+    if(groups.length) anyGroups=true;
     groups.forEach(({c,rows})=>{
       const card=el('div','cclub');
       const head=el('div','chead');
@@ -914,7 +930,7 @@ if(typeof module!=='undefined') module.exports={distKm,parseName,classify,classi
       const a=el('a','go','Book i Padelmates ↗');a.href='https://padelmates.se/club/'+c.s;a.target='_blank';a.rel='noopener';
       head.append(left,a);card.append(head);
       const list=el('div');
-      const LIM=8;const open=state.cmore[c.id];
+      const LIM=8;const ck=c.id+'|'+date;const open=state.cmore[ck];
       rows.forEach((r,i)=>{
         if(!open&&i>=LIM)return;
         const end=cph((r.st+r.du)*60000);
@@ -924,9 +940,11 @@ if(typeof module!=='undefined') module.exports={distKm,parseName,classify,classi
         list.append(x);
       });
       card.append(list);
-      if(rows.length>LIM&&!open){const m=el('button','cmore','Vis alle '+rows.length+' tider');m.type='button';m.addEventListener('click',()=>{state.cmore[c.id]=true;render()});card.append(m)}
+      if(rows.length>LIM&&!open){const m=el('button','cmore','Vis alle '+rows.length+' tider');m.type='button';m.addEventListener('click',()=>{state.cmore[ck]=true;render()});card.append(m)}
       out.append(card);
     });
+    });
+    if(!anyGroups) out.append(emptyBox('Ingen ledige baner med de valgte filtre','Prøv en anden dag, flere tidspunkter eller en anden varighed.'));
     out.append(el('div','note','Tider og priser er fra Padelmates. Åbn Padelmates for at booke.'));
   }
   /* ---------- lunar liga ---------- */
